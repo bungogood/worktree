@@ -8,10 +8,10 @@ import (
 )
 
 var switchCmd = &cobra.Command{
-	Use:   "switch <branch>",
+	Use:   "switch [branch]",
 	Short: "Switch to a worktree",
-	Long:  `Switch to an existing worktree by branch name.`,
-	Args:  cobra.ExactArgs(1),
+	Long:  `Switch to an existing worktree by branch name. If no branch is specified, switches to the main worktree.`,
+	Args:  cobra.MaximumNArgs(1),
 	ValidArgsFunction: pkg.RepoValidArgsFunction(func(
 		repo *pkg.Repo,
 		cmd *cobra.Command,
@@ -30,12 +30,17 @@ var switchCmd = &cobra.Command{
 		return trees, cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
-		tree := args[0]
+		var worktree *pkg.Worktree
 
-		// Find the worktree
-		worktree := repo.FindWorktree(tree)
-		if worktree == nil {
-			return fmt.Errorf("no worktree found '%s'", tree)
+		// If no args, switch to main worktree
+		if len(args) == 0 {
+			worktree = repo.MainWorktree
+		} else {
+			tree := args[0]
+			worktree = repo.FindWorktree(tree)
+			if worktree == nil {
+				return fmt.Errorf("no worktree found '%s'", tree)
+			}
 		}
 
 		// Switch to the worktree

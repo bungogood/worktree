@@ -33,7 +33,6 @@ var removeCmd = &cobra.Command{
 		return branches, cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
-
 		var targetWorktree *pkg.Worktree
 
 		// Determine which worktree to remove
@@ -52,25 +51,13 @@ var removeCmd = &cobra.Command{
 			}
 		}
 
-		// Protect the main worktree
-		if repo.IsMainWorktree(targetWorktree) {
-			return fmt.Errorf("cannot remove the main worktree (contains .git directory)")
-		}
-
 		// Remove the worktree
-		_, err := repo.RunGitCommand(nil, "worktree", "remove", targetWorktree.Path, "--force")
+		err := repo.RemoveWorktree(targetWorktree, forceDelete)
 		if err != nil {
-			return fmt.Errorf("error removing worktree: %v", err)
+			return err
 		}
 
-		if forceDelete {
-			_, err := repo.RunGitCommand(repo.MainWorktree, "branch", "-D", targetWorktree.Branch)
-			if err != nil {
-				return fmt.Errorf("error force deleting branch: %v", err)
-			}
-		}
-
-		fmt.Printf("Worktree removed: '%s'\n", targetWorktree.Branch)
+		fmt.Printf("Worktree removed: '%s'\n", targetWorktree.Name)
 
 		// If we just removed the current worktree, cd to the main worktree
 		if targetWorktree == repo.CurrentWorktree {

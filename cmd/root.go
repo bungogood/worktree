@@ -12,9 +12,6 @@ var rootCmd = &cobra.Command{
 	Use:   "worktree",
 	Short: "Git worktree manager",
 	Long:  `A CLI tool for managing git worktrees with automatic organization and navigation.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
 	CompletionOptions: cobra.CompletionOptions{
 		HiddenDefaultCmd: true,
 	},

@@ -8,13 +8,6 @@ import (
 	"strings"
 )
 
-// Worktree represents a git worktree
-type Worktree struct {
-	Path   string // Absolute path to the worktree
-	Branch string // Branch name
-	Name   string // Worktree name
-}
-
 // Repo represents a git repository with its worktrees
 type Repo struct {
 	Name            string     // Repository name
@@ -96,7 +89,7 @@ func findMainGitDir() (string, error) {
 
 // loadWorktrees loads all worktrees from git
 func (r *Repo) loadWorktrees() error {
-	output, err := RunCommand("git", "worktree", "list", "--porcelain")
+	output, err := r.RunGitCommand(nil, "worktree", "list", "--porcelain")
 
 	if err != nil {
 		return fmt.Errorf("failed to list worktrees: %w", err)
@@ -154,35 +147,6 @@ func (r *Repo) GetWorktreePath(branch string) string {
 	return filepath.Join(r.WorktreesDir, branch)
 }
 
-// FindWorktreeByBranch finds a worktree by branch name
-func (r *Repo) FindWorktreeByBranch(branch string) *Worktree {
-	for i := range r.Worktrees {
-		if r.Worktrees[i].Branch == branch {
-			return &r.Worktrees[i]
-		}
-	}
-	return nil
-}
-
-// FindWorktreeByName finds a worktree by name
-func (r *Repo) FindWorktreeByName(name string) *Worktree {
-	for i := range r.Worktrees {
-		if r.Worktrees[i].Name == name {
-			return &r.Worktrees[i]
-		}
-	}
-	return nil
-}
-
-// FindWorktree finds a worktree by either name then branch
-func (r *Repo) FindWorktree(tree string) *Worktree {
-	wt := r.FindWorktreeByName(tree)
-	if wt != nil {
-		return wt
-	}
-	return r.FindWorktreeByBranch(tree)
-}
-
 // EnsureWorktreesDir creates the .{repo}.worktrees directory if it doesn't exist
 func (r *Repo) EnsureWorktreesDir() error {
 	if _, err := os.Stat(r.WorktreesDir); os.IsNotExist(err) {
@@ -203,85 +167,4 @@ func (r *Repo) RunGitCommand(wt *Worktree, args ...string) ([]byte, error) {
 		args = append([]string{"-C", wt.Path}, args...)
 	}
 	return RunCommand("git", args...)
-}
-
-// AddExistingBranch creates a worktree for an existing local or remote branch
-func (r *Repo) AddExistingBranch(branch, name string) (*Worktree, error) {
-	// Check if worktree already exists
-	if existing := r.FindWorktreeByName(name); existing != nil {
-		return nil, fmt.Errorf("worktree already exists: %s", name)
-	}
-
-	if existing := r.FindWorktreeByBranch(branch); existing != nil {
-		return existing, fmt.Errorf("worktree already exists for branch '%s'", branch)
-	}
-
-	// Ensure the worktrees directory exists
-	if err := r.EnsureWorktreesDir(); err != nil {
-		return nil, fmt.Errorf("failed to create worktrees directory: %w", err)
-	}
-
-	// Get the path for the new worktree using the custom name
-	worktreePath := r.GetWorktreePath(name)
-
-	// Check if branch exists locally
-	_, err := r.RunGitCommand(nil, "rev-parse", "--verify", branch)
-	localExists := err == nil
-
-	// If not local, check if it exists on remote
-	if !localExists {
-		_, err = r.RunGitCommand(nil, "rev-parse", "--verify", fmt.Sprintf("origin/%s", branch))
-		if err != nil {
-			return nil, fmt.Errorf("branch '%s' does not exist locally or on remote", branch)
-		}
-		// Branch exists on remote, create worktree with tracking
-		_, err = r.RunGitCommand(nil, "worktree", "add", "-b", branch, worktreePath, fmt.Sprintf("origin/%s", branch))
-	} else {
-		// Branch exists locally
-		_, err = r.RunGitCommand(nil, "worktree", "add", worktreePath, branch)
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to create worktree: %w", err)
-	}
-
-	return &Worktree{
-		Path:   worktreePath,
-		Branch: branch,
-		Name:   name,
-	}, nil
-}
-
-// CreateNewBranch creates a worktree with a new branch
-func (r *Repo) CreateNewBranch(branch, name string) (*Worktree, error) {
-	// Check if branch already exists
-	_, err := r.RunGitCommand(nil, "rev-parse", "--verify", branch)
-	if err == nil {
-		return nil, fmt.Errorf("branch '%s' already exists", branch)
-	}
-
-	// Check if worktree already exists
-	if existing := r.FindWorktreeByName(name); existing != nil {
-		return nil, fmt.Errorf("worktree already exists at: %s", existing.Path)
-	}
-
-	// Ensure the worktrees directory exists
-	if err := r.EnsureWorktreesDir(); err != nil {
-		return nil, fmt.Errorf("failed to create worktrees directory: %w", err)
-	}
-
-	// Get the path for the new worktree using the custom name
-	worktreePath := r.GetWorktreePath(name)
-
-	// Create the new worktree with a new branch
-	_, err = r.RunGitCommand(nil, "worktree", "add", "-b", branch, worktreePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create worktree: %w", err)
-	}
-
-	return &Worktree{
-		Path:   worktreePath,
-		Branch: branch,
-		Name:   name,
-	}, nil
 }

@@ -38,8 +38,7 @@ wrk() {
             
             # Print all output except the last line (the delimiter line)
             # Use sed to remove the last line (compatible with macOS)
-            local output
-            output="$(echo "$result" | sed '$d')"
+            local output="$(echo "$result" | sed '$d')"
             if [ -n "$output" ]; then
                 echo "$output"
             fi

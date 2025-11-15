@@ -4,18 +4,24 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bungogood/worktree/pkg"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "worktree",
-	Short: "A tiny hello world Cobra app",
+	Short: "Git worktree manager",
+	Long:  `A CLI tool for managing git worktrees with automatic organization and navigation.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Hello, world!")
+		cmd.Help()
 	},
 	CompletionOptions: cobra.CompletionOptions{
 		HiddenDefaultCmd: true,
 	},
+}
+
+func init() {
+	rootCmd.PersistentFlags().BoolVarP(&pkg.GlobalFlags.Verbose, "verbose", "v", false, "Show all git commands being executed")
 }
 
 // Execute runs the root command.

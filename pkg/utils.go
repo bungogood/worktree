@@ -52,3 +52,19 @@ func RunCommand(name string, args ...string) ([]byte, error) {
 	output, err := cmd.CombinedOutput()
 	return output, err
 }
+
+// IsTerminal checks if stdout is a terminal
+func IsTerminal() bool {
+	// Check if TERM is set (more reliable when output is captured)
+	term := os.Getenv("TERM")
+	if term != "" && term != "dumb" {
+		return true
+	}
+
+	// Fallback to checking if stdout is a character device
+	if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) != 0 {
+		return true
+	}
+
+	return false
+}

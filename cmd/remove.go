@@ -38,17 +38,17 @@ var removeCmd = &cobra.Command{
 
 		// Determine which worktree to remove
 		if len(args) == 0 {
-			// No branch specified, use current worktree
+			// No tree specified, use current worktree
 			if repo.CurrentWorktree == nil {
 				return fmt.Errorf("not currently in a worktree")
 			}
 			targetWorktree = repo.CurrentWorktree
 		} else {
-			// Branch specified, find it
-			branch := args[0]
-			targetWorktree = repo.FindWorktree(branch)
+			// Tree specified, find it
+			tree := args[0]
+			targetWorktree = repo.FindWorktree(tree)
 			if targetWorktree == nil {
-				return fmt.Errorf("no worktree found '%s'", branch)
+				return fmt.Errorf("no worktree found '%s'", tree)
 			}
 		}
 
@@ -70,7 +70,7 @@ var removeCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("Worktree removed: %s\n", targetWorktree.Branch)
+		fmt.Printf("Worktree removed: '%s'\n", targetWorktree.Branch)
 
 		// If we just removed the current worktree, cd to the main worktree
 		if targetWorktree == repo.CurrentWorktree {

@@ -27,7 +27,13 @@ var listCmd = &cobra.Command{
 				marker = "> "
 			}
 
-			fmt.Printf("%s%-20s %s\n", marker, wt.Branch, wt.Path)
+			// Display name, with branch in brackets if different
+			display := wt.Name
+			if wt.Branch != wt.Name {
+				display = fmt.Sprintf("%s [%s]", wt.Name, wt.Branch)
+			}
+
+			fmt.Printf("%s%s\n", marker, display)
 		}
 		return nil
 	}),

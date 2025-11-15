@@ -8,10 +8,10 @@ import (
 )
 
 var addCmd = &cobra.Command{
-	Use:   "add <branch>",
+	Use:   "add <branch> [name]",
 	Short: "Add an existing branch as a worktree",
-	Long:  `Creates a new worktree for an existing local or remote branch and navigates to it.`,
-	Args:  cobra.ExactArgs(1),
+	Long:  `Creates a new worktree for an existing local or remote branch and navigates to it. Optionally specify a custom directory name.`,
+	Args:  cobra.RangeArgs(1, 2),
 	ValidArgsFunction: pkg.RepoValidArgsFunction(func(
 		repo *pkg.Repo,
 		cmd *cobra.Command,
@@ -27,31 +27,28 @@ var addCmd = &cobra.Command{
 		}
 		// Filter out all branches that already have worktrees
 		var filtered []string
-		for _, br := range branches {
-			if repo.FindWorktree(br) == nil {
-				filtered = append(filtered, br)
+		for _, branch := range branches {
+			if repo.FindWorktreeByBranch(branch) == nil {
+				filtered = append(filtered, branch)
 			}
 		}
 		return filtered, cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
 		branch := args[0]
+		name := branch
+		if len(args) > 1 {
+			name = args[1]
+		}
 
 		// Try to add the existing branch
-		worktreePath, err := repo.AddExistingBranch(branch)
+		worktree, err := repo.AddExistingBranch(branch, name)
 		if err != nil {
-			// Check if it's the "already exists" error
-			if err.Error() == "worktree already exists" {
-				existing := repo.FindWorktreeByBranch(branch)
-				fmt.Printf("Worktree for branch '%s' already exists at: %s\n", branch, existing.Path)
-				pkg.ChangeDirectory(existing.Path)
-				return nil
-			}
 			return err
 		}
 
-		fmt.Printf("Worktree created: %s\n", branch)
-		pkg.ChangeDirectory(worktreePath)
+		fmt.Printf("Worktree created: '%s'\n", name)
+		pkg.ChangeDirectory(worktree.Path)
 		return nil
 	}),
 }

@@ -21,20 +21,21 @@ var switchCmd = &cobra.Command{
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 
-		// Return list of branch names
-		var branches []string
+		// Return list of worktrees
+		var trees []string
 		for _, wt := range repo.Worktrees {
-			branches = append(branches, wt.Branch)
+			trees = append(trees, wt.Name)
+			trees = append(trees, wt.Branch)
 		}
-		return branches, cobra.ShellCompDirectiveNoFileComp
+		return trees, cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
-		branch := args[0]
+		tree := args[0]
 
 		// Find the worktree
-		worktree := repo.FindWorktree(branch)
+		worktree := repo.FindWorktree(tree)
 		if worktree == nil {
-			return fmt.Errorf("no worktree found '%s'", branch)
+			return fmt.Errorf("no worktree found '%s'", tree)
 		}
 
 		// Switch to the worktree

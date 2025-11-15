@@ -27,6 +27,7 @@ func init() {
 	rootCmd.AddCommand(commands.NewListCmd())
 	rootCmd.AddCommand(commands.NewRemoveCmd())
 	rootCmd.AddCommand(commands.NewSwitchCmd())
+	rootCmd.AddCommand(commands.NewIgnoreCmd())
 }
 
 // Execute runs the root command.

@@ -47,7 +47,7 @@ wrk() {
             if [ -d "$dir_path" ]; then
                 cd "$dir_path" || return 1
             fi
-        else
+        elif [ -n "$result" ]; then
             # No delimiter, just echo the output
             echo "$result"
         fi
@@ -61,10 +61,10 @@ wrk() {
 		// Generate bash completions for the worktree command
 		rootCmd.GenBashCompletion(os.Stdout)
 
-		// Add completion for wrk alias
+		// Add completion for wrk alias with default file completion
 		fmt.Println(`
 # Enable completion for wrk alias
-complete -F __start_worktree wrk`)
+complete -o default -F __start_worktree wrk`)
 	},
 }
 

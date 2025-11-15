@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/bungogood/worktree/pkg"
 	"github.com/spf13/cobra"
@@ -13,17 +12,10 @@ var listCmd = &cobra.Command{
 	Aliases: []string{"ls"},
 	Short:   "List all worktrees",
 	Long:    `Display all worktrees in the repository with their branches and paths.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// Load the repository
-		repo, err := pkg.LoadRepo()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
-		}
-
+	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
 		if len(repo.Worktrees) == 0 {
 			fmt.Println("No worktrees found.")
-			return
+			return nil
 		}
 
 		// Display each worktree
@@ -37,7 +29,8 @@ var listCmd = &cobra.Command{
 
 			fmt.Printf("%s%-20s %s\n", marker, wt.Branch, wt.Path)
 		}
-	},
+		return nil
+	}),
 }
 
 func init() {

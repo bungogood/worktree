@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"slices"
 
 	"github.com/bungogood/worktree/pkg"
 	"github.com/spf13/cobra"
@@ -18,13 +18,21 @@ var removeCmd = &cobra.Command{
 	Short:   "Remove a worktree",
 	Long:    `Remove a worktree. If no branch is specified, removes the current worktree. Cannot remove the main worktree.`,
 	Args:    cobra.MaximumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		// Load the repository
-		repo, err := pkg.LoadRepo()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
+	ValidArgsFunction: pkg.RepoValidArgsFunction(func(
+		repo *pkg.Repo,
+		cmd *cobra.Command,
+		args []string,
+		toComplete string) ([]string, cobra.ShellCompDirective) {
+		// Return list of branch names
+		var branches []string
+		for _, wt := range repo.Worktrees {
+			if !repo.IsMainWorktree(&wt) && !slices.Contains(args, wt.Branch) {
+				branches = append(branches, wt.Branch)
+			}
 		}
+		return branches, cobra.ShellCompDirectiveNoFileComp
+	}),
+	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
 
 		var targetWorktree *pkg.Worktree
 
@@ -32,8 +40,7 @@ var removeCmd = &cobra.Command{
 		if len(args) == 0 {
 			// No branch specified, use current worktree
 			if repo.CurrentWorktree == nil {
-				fmt.Fprintf(os.Stderr, "Error: Not currently in a worktree\n")
-				os.Exit(1)
+				return fmt.Errorf("not currently in a worktree")
 			}
 			targetWorktree = repo.CurrentWorktree
 		} else {
@@ -41,40 +48,36 @@ var removeCmd = &cobra.Command{
 			branch := args[0]
 			targetWorktree = repo.FindWorktree(branch)
 			if targetWorktree == nil {
-				fmt.Fprintf(os.Stderr, "Error: No worktree found for branch '%s'\n", branch)
-				os.Exit(1)
+				return fmt.Errorf("no worktree found '%s'", branch)
 			}
 		}
 
 		// Protect the main worktree
 		if repo.IsMainWorktree(targetWorktree) {
-			fmt.Fprintf(os.Stderr, "Error: Cannot remove the main worktree (contains .git directory)\n")
-			os.Exit(1)
-		}
-
-		// Build git worktree remove command
-		removeArgs := []string{"worktree", "remove", targetWorktree.Path}
-		if forceDelete {
-			removeArgs = append(removeArgs, "--force")
+			return fmt.Errorf("cannot remove the main worktree (contains .git directory)")
 		}
 
 		// Remove the worktree
-		fmt.Printf("Removing worktree for branch '%s'...\n", targetWorktree.Branch)
-		_, err = repo.RunGitCommand(nil, removeArgs...)
+		_, err := repo.RunGitCommand(nil, "worktree", "remove", targetWorktree.Path, "--force")
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error removing worktree: %v\n", err)
-			fmt.Fprintf(os.Stderr, "Tip: Use -D flag to force delete\n")
-			os.Exit(1)
+			return fmt.Errorf("error removing worktree: %v", err)
 		}
 
-		fmt.Printf("Worktree removed: %s\n", targetWorktree.Path)
+		if forceDelete {
+			_, err := repo.RunGitCommand(repo.MainWorktree, "branch", "-D", targetWorktree.Branch)
+			if err != nil {
+				return fmt.Errorf("error force deleting branch: %v", err)
+			}
+		}
+
+		fmt.Printf("Worktree removed: %s\n", targetWorktree.Branch)
 
 		// If we just removed the current worktree, cd to the main worktree
 		if targetWorktree == repo.CurrentWorktree {
-			fmt.Println("Returning to main worktree...")
 			pkg.ChangeDirectory(repo.MainWorktree.Path)
 		}
-	},
+		return nil
+	}),
 }
 
 func init() {

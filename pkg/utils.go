@@ -34,6 +34,16 @@ func RepoCommand(fn func(*Repo, *cobra.Command, []string) error) func(*cobra.Com
 	}
 }
 
+func RepoValidArgsFunction(fn func(*Repo, *cobra.Command, []string, string) ([]string, cobra.ShellCompDirective)) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		repo, err := LoadRepo()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		return fn(repo, cmd, args, toComplete)
+	}
+}
+
 func RunCommand(name string, args ...string) ([]byte, error) {
 	if GlobalFlags.Verbose {
 		fmt.Fprintf(os.Stderr, "Running: %s %s\n", name, strings.Join(args, " "))

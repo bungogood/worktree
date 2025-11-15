@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -49,6 +49,7 @@ var switchCmd = &cobra.Command{
 	}),
 }
 
-func init() {
-	rootCmd.AddCommand(switchCmd)
+// NewSwitchCmd returns the switch command
+func NewSwitchCmd() *cobra.Command {
+	return switchCmd
 }

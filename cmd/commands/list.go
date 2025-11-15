@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -37,7 +37,8 @@ var listCmd = &cobra.Command{
 	}),
 }
 
-func init() {
+// NewListCmd returns the list command
+func NewListCmd() *cobra.Command {
 	listCmd.Flags().BoolVar(&noColor, "no-color", false, "Disable colored output")
-	rootCmd.AddCommand(listCmd)
+	return listCmd
 }

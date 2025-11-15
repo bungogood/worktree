@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bungogood/worktree/cmd/commands"
 	"github.com/bungogood/worktree/pkg"
 	"github.com/spf13/cobra"
 )
@@ -19,6 +20,13 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&pkg.GlobalFlags.Verbose, "verbose", "v", false, "Show all git commands being executed")
+
+	// Register all commands
+	rootCmd.AddCommand(commands.NewAddCmd())
+	rootCmd.AddCommand(commands.NewNewCmd())
+	rootCmd.AddCommand(commands.NewListCmd())
+	rootCmd.AddCommand(commands.NewRemoveCmd())
+	rootCmd.AddCommand(commands.NewSwitchCmd())
 }
 
 // Execute runs the root command.

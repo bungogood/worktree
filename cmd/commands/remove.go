@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -67,7 +67,8 @@ var removeCmd = &cobra.Command{
 	}),
 }
 
-func init() {
+// NewRemoveCmd returns the remove command
+func NewRemoveCmd() *cobra.Command {
 	removeCmd.Flags().BoolVarP(&forceDelete, "force", "D", false, "Force delete the worktree (like git branch -D)")
-	rootCmd.AddCommand(removeCmd)
+	return removeCmd
 }

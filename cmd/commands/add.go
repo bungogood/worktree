@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -53,6 +53,7 @@ var addCmd = &cobra.Command{
 	}),
 }
 
-func init() {
-	rootCmd.AddCommand(addCmd)
+// NewAddCmd returns the add command
+func NewAddCmd() *cobra.Command {
+	return addCmd
 }

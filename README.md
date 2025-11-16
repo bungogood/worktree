@@ -1,5 +1,7 @@
 # worktree
 
+[![Build](../../actions/workflows/build.yml/badge.svg)](../../actions/workflows/build.yml)
+
 A CLI tool for managing git worktrees with automatic organisation and navigation.
 
 Work on multiple features simultaneously in separate directories while maintaining the ability to switch between them. Each worktree is an independent working directory linked to the same repository, allowing you to keep work-in-progress changes isolated without stashing or committing.
@@ -57,9 +59,11 @@ wrk add existing-branch
 wrk add existing-branch another-worktree-name
 
 # Switch to a worktree (changes directory)
+wrk switch  # Switch to main worktree
 wrk switch feature-branch
 
 # Remove worktrees
+wrk rm # Removes current worktree and switches to main worktree
 wrk rm feature-branch
 wrk rm branch-1 branch-2 branch-3
 wrk rm -D feature-branch  # Deletes branch

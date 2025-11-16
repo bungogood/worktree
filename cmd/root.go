@@ -7,9 +7,9 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Use:   "worktree",
+	Use:   "wrk",
 	Short: "Git worktree manager",
-	Long:  `A CLI tool for managing git worktrees with automatic organization and navigation.`,
+	Long:  `A CLI tool for managing git worktrees with automatic organisation and navigation.`,
 	CompletionOptions: cobra.CompletionOptions{
 		HiddenDefaultCmd: true,
 	},

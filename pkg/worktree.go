@@ -59,39 +59,41 @@ func (r *Repo) AddExistingBranch(branch, name string) (*Worktree, error) {
 	// Get the path for the new worktree using the custom name
 	worktreePath := r.GetWorktreePath(name)
 
-	// Check if branch exists locally
-	_, err := r.RunGitCommand(nil, "rev-parse", "--verify", branch)
-	localExists := err == nil
-
-	// If not local, check if it exists on remote
-	if !localExists {
-		_, err = r.RunGitCommand(nil, "rev-parse", "--verify", fmt.Sprintf("origin/%s", branch))
-		if err != nil {
-			return nil, fmt.Errorf("branch '%s' does not exist locally or on remote", branch)
-		}
+	// Check if branch exists locally or on remote
+	var err error
+	if r.BranchExists(branch) {
+		// Branch exists locally
+		_, err = r.RunGitCommand(nil, "worktree", "add", worktreePath, branch)
+	} else if r.BranchExists(fmt.Sprintf("origin/%s", branch)) {
 		// Branch exists on remote, create worktree with tracking
 		_, err = r.RunGitCommand(nil, "worktree", "add", "-b", branch, worktreePath, fmt.Sprintf("origin/%s", branch))
 	} else {
-		// Branch exists locally
-		_, err = r.RunGitCommand(nil, "worktree", "add", worktreePath, branch)
+		return nil, fmt.Errorf("branch '%s' does not exist locally or on remote", branch)
 	}
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create worktree: %w", err)
 	}
 
-	return &Worktree{
+	wt := &Worktree{
 		Path:   worktreePath,
 		Branch: branch,
 		Name:   name,
-	}, nil
+	}
+
+	// Apply skip-worktree settings to the new worktree
+	if err := r.applySkipSettingsToWorktree(wt); err != nil {
+		// Log error but don't fail the worktree creation
+		fmt.Printf("Warning: failed to apply skip settings: %v\n", err)
+	}
+
+	return wt, nil
 }
 
 // CreateNewBranch creates a worktree with a new branch
 func (r *Repo) CreateNewBranch(branch, name string) (*Worktree, error) {
 	// Check if branch already exists
-	_, err := r.RunGitCommand(nil, "rev-parse", "--verify", branch)
-	if err == nil {
+	if r.BranchExists(branch) {
 		return nil, fmt.Errorf("branch '%s' already exists", branch)
 	}
 
@@ -109,16 +111,24 @@ func (r *Repo) CreateNewBranch(branch, name string) (*Worktree, error) {
 	worktreePath := r.GetWorktreePath(name)
 
 	// Create the new worktree with a new branch
-	_, err = r.RunGitCommand(nil, "worktree", "add", "-b", branch, worktreePath)
+	_, err := r.RunGitCommand(nil, "worktree", "add", "-b", branch, worktreePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create worktree: %w", err)
 	}
 
-	return &Worktree{
+	wt := &Worktree{
 		Path:   worktreePath,
 		Branch: branch,
 		Name:   name,
-	}, nil
+	}
+
+	// Apply skip-worktree settings to the new worktree
+	if err := r.applySkipSettingsToWorktree(wt); err != nil {
+		// Log error but don't fail the worktree creation
+		fmt.Printf("Warning: failed to apply skip settings: %v\n", err)
+	}
+
+	return wt, nil
 }
 
 // RemoveWorktree removes a worktree and optionally force deletes the branch

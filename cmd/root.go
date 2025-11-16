@@ -16,6 +16,7 @@ var rootCmd = &cobra.Command{
 	CompletionOptions: cobra.CompletionOptions{
 		HiddenDefaultCmd: true,
 	},
+	SilenceUsage: true,
 }
 
 func init() {
@@ -27,7 +28,7 @@ func init() {
 	rootCmd.AddCommand(commands.NewListCmd())
 	rootCmd.AddCommand(commands.NewRemoveCmd())
 	rootCmd.AddCommand(commands.NewSwitchCmd())
-	rootCmd.AddCommand(commands.NewIgnoreCmd())
+	rootCmd.AddCommand(commands.NewSkipCmd())
 }
 
 // Execute runs the root command.

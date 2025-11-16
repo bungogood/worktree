@@ -162,6 +162,12 @@ func (r *Repo) IsMainWorktree(wt *Worktree) bool {
 	return r.MainWorktree != nil && wt.Path == r.MainWorktree.Path
 }
 
+// BranchExists checks if a branch exists
+func (r *Repo) BranchExists(branch string) bool {
+	_, err := r.RunGitCommand(nil, "rev-parse", "--verify", branch)
+	return err == nil
+}
+
 func (r *Repo) RunGitCommand(wt *Worktree, args ...string) ([]byte, error) {
 	if wt != nil {
 		args = append([]string{"-C", wt.Path}, args...)

@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/bungogood/worktree/pkg"
@@ -32,14 +31,7 @@ Use --rm flag to remove exclusions instead.`,
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			// Filter out already specified args
-			var completions []string
-			for _, pattern := range patterns {
-				if !slices.Contains(args, pattern) {
-					completions = append(completions, pattern)
-				}
-			}
-			return completions, cobra.ShellCompDirectiveNoFileComp
+			return pkg.GlobFilterComplete(args, patterns, toComplete), cobra.ShellCompDirectiveNoFileComp
 		}
 		// Otherwise use default file completion
 		return nil, cobra.ShellCompDirectiveDefault

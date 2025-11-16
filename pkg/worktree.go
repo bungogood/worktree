@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 )
 
 // Worktree represents a git worktree
@@ -32,13 +34,58 @@ func (r *Repo) FindWorktreeByName(name string) *Worktree {
 	return nil
 }
 
-// FindWorktree finds a worktree by either name then branch
-func (r *Repo) FindWorktree(tree string) *Worktree {
-	wt := r.FindWorktreeByName(tree)
-	if wt != nil {
-		return wt
+func (r *Repo) WorktreeAliases() []string {
+	var aliases []string
+	for _, wt := range r.Worktrees {
+		aliases = append(aliases, wt.Name)
+		aliases = append(aliases, wt.Branch)
 	}
-	return r.FindWorktreeByBranch(tree)
+	return aliases
+}
+
+// FindWorktreeByBranchGlob finds all worktrees matching a glob pattern against their branch
+func (r *Repo) FindWorktreeGlob(pattern string) ([]*Worktree, []string) {
+	wtMatchSet := make(map[*Worktree]bool)
+	aliasMatchSet := make(map[string]bool)
+	for i := range r.Worktrees {
+		wt := &r.Worktrees[i]
+		if matched, _ := filepath.Match(pattern, wt.Branch); matched {
+			wtMatchSet[wt] = true
+			aliasMatchSet[wt.Branch] = true
+		}
+		if matched, _ := filepath.Match(pattern, wt.Name); matched {
+			wtMatchSet[wt] = true
+			aliasMatchSet[wt.Name] = true
+		}
+	}
+
+	var wtMatches []*Worktree
+	var aliasMatches []string
+
+	for wt := range wtMatchSet {
+		wtMatches = append(wtMatches, wt)
+	}
+	for alias := range aliasMatchSet {
+		aliasMatches = append(aliasMatches, alias)
+	}
+
+	return wtMatches, aliasMatches
+}
+
+// FindWorktree finds a unique worktree matching a pattern (exact or glob)
+// Returns error if no matches or multiple matches found
+func (r *Repo) FindWorktree(pattern string) (*Worktree, error) {
+	matches, aliasMatches := r.FindWorktreeGlob(pattern)
+
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("no worktree found matching '%s'", pattern)
+	}
+
+	if len(matches) == 1 {
+		return matches[0], nil
+	}
+
+	return nil, fmt.Errorf("pattern '%s' matches multiple worktrees:\n  %s", pattern, strings.Join(aliasMatches, "\n  "))
 }
 
 // AddExistingBranch creates a worktree for an existing local or remote branch

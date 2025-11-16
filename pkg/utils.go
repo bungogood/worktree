@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -108,4 +109,32 @@ func copyFileWithMode(src, dst string, mode os.FileMode) error {
 
 	_, err = io.Copy(out, in)
 	return err
+}
+
+func GlobFilter(pattern string, candidates []string) []string {
+	var matches []string
+	for _, candidate := range candidates {
+		if matched, _ := filepath.Match(pattern, candidate); matched {
+			matches = append(matches, candidate)
+		}
+	}
+	return matches
+}
+
+func GlobFilterComplete(args []string, completions []string,
+	toComplete string) []string {
+	pattern := toComplete + "*"
+	var matches []string
+	for _, candidate := range completions {
+		if slices.Contains(args, candidate) {
+			continue
+		}
+
+		if matched, _ := filepath.Match(pattern, candidate); matched {
+			matches = append(matches, candidate)
+		} else if matched, _ := filepath.Match(pattern+"/", candidate); matched {
+			matches = append(matches, candidate)
+		}
+	}
+	return matches
 }

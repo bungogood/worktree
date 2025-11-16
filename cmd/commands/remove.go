@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/bungogood/worktree/pkg"
@@ -17,20 +16,13 @@ var removeCmd = &cobra.Command{
 	Use:     "remove [branch...]",
 	Aliases: []string{"rm"},
 	Short:   "Remove worktrees",
-	Long:    `Remove one or more worktrees. If no branches are specified, removes the current worktree. Cannot remove the main worktree.`,
+	Long:    `Remove one or more worktrees. If no worktrees are specified, removes the current worktree. Cannot remove the main worktree.`,
 	ValidArgsFunction: pkg.RepoCompletion(func(
 		repo *pkg.Repo,
 		cmd *cobra.Command,
 		args []string,
 		toComplete string) ([]string, cobra.ShellCompDirective) {
-		// Return list of branch names (excluding already specified ones)
-		var branches []string
-		for _, wt := range repo.Worktrees {
-			if !repo.IsMainWorktree(&wt) && !slices.Contains(args, wt.Branch) {
-				branches = append(branches, wt.Branch)
-			}
-		}
-		return branches, cobra.ShellCompDirectiveNoFileComp
+		return pkg.GlobFilterComplete(args, repo.WorktreeAliases(), toComplete), cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
 		var worktreesToRemove []*pkg.Worktree
@@ -45,13 +37,13 @@ var removeCmd = &cobra.Command{
 			}
 			worktreesToRemove = append(worktreesToRemove, repo.CurrentWorktree)
 		} else {
-			// Trees specified, find them all
-			for _, tree := range args {
-				wt := repo.FindWorktree(tree)
-				if wt != nil {
-					worktreesToRemove = append(worktreesToRemove, wt)
+			// Trees specified, find them all (supporting glob patterns)
+			for _, pattern := range args {
+				wt, err := repo.FindWorktree(pattern)
+				if err != nil {
+					errors = append(errors, fmt.Sprintf("  %v", err))
 				} else {
-					errors = append(errors, fmt.Sprintf("  no worktree found: '%s'", tree))
+					worktreesToRemove = append(worktreesToRemove, wt)
 				}
 			}
 		}

@@ -42,7 +42,8 @@ Use --always-rm to remove paths from the always-copy list.`,
 					completions = append(completions, path)
 				}
 			}
-			return completions, cobra.ShellCompDirectiveNoFileComp
+
+			return pkg.GlobFilterComplete(args, completions, toComplete), cobra.ShellCompDirectiveNoFileComp
 		}
 
 		// Only provide completion for the first argument (source path)
@@ -95,7 +96,7 @@ Use --always-rm to remove paths from the always-copy list.`,
 			}
 		}
 
-		return completions, cobra.ShellCompDirectiveNoSpace
+		return pkg.GlobFilterComplete(args, completions, toComplete), cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
 		// If --always flag is set with no args, list always-copy paths
@@ -162,15 +163,7 @@ func NewCopyCmd() *cobra.Command {
 		cmd *cobra.Command,
 		args []string,
 		toComplete string) ([]string, cobra.ShellCompDirective) {
-		// Return list of worktrees excluding current
-		var trees []string
-		for _, wt := range repo.Worktrees {
-			if repo.CurrentWorktree == nil || wt.Name != repo.CurrentWorktree.Name {
-				trees = append(trees, wt.Name)
-				trees = append(trees, wt.Branch)
-			}
-		}
-		return trees, cobra.ShellCompDirectiveNoFileComp
+		return pkg.GlobFilterComplete(args, repo.WorktreeAliases(), toComplete), cobra.ShellCompDirectiveNoFileComp
 	}))
 
 	return copyCmd

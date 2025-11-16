@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/bungogood/worktree/pkg"
 	"github.com/spf13/cobra"
 )
@@ -21,13 +19,7 @@ var switchCmd = &cobra.Command{
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 
-		// Return list of worktrees
-		var trees []string
-		for _, wt := range repo.Worktrees {
-			trees = append(trees, wt.Name)
-			trees = append(trees, wt.Branch)
-		}
-		return trees, cobra.ShellCompDirectiveNoFileComp
+		return pkg.GlobFilterComplete(args, repo.WorktreeAliases(), toComplete), cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
 		var worktree *pkg.Worktree
@@ -36,11 +28,12 @@ var switchCmd = &cobra.Command{
 		if len(args) == 0 {
 			worktree = repo.MainWorktree
 		} else {
-			tree := args[0]
-			worktree = repo.FindWorktree(tree)
-			if worktree == nil {
-				return fmt.Errorf("no worktree found '%s'", tree)
+			pattern := args[0]
+			wt, err := repo.FindWorktree(pattern)
+			if err != nil {
+				return err
 			}
+			worktree = wt
 		}
 
 		// Switch to the worktree

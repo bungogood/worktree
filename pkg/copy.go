@@ -27,11 +27,7 @@ func (r *Repo) CopyFromWorktree(sourceWt *Worktree, destWt *Worktree, srcPath st
 // GetSourceWorktree determines the source worktree based on a name/branch or defaults to main
 func (r *Repo) GetSourceWorktree(name string) (*Worktree, error) {
 	if name != "" {
-		sourceWt := r.FindWorktree(name)
-		if sourceWt == nil {
-			return nil, fmt.Errorf("source worktree not found: '%s'", name)
-		}
-		return sourceWt, nil
+		return r.FindWorktree(name)
 	}
 	// Default to main worktree
 	return r.MainWorktree, nil

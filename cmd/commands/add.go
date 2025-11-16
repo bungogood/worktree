@@ -29,6 +29,7 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
+
 		// Filter out all branches that already have worktrees
 		var filtered []string
 		for _, branch := range branches {
@@ -36,7 +37,8 @@ var addCmd = &cobra.Command{
 				filtered = append(filtered, branch)
 			}
 		}
-		return filtered, cobra.ShellCompDirectiveNoFileComp
+
+		return pkg.GlobFilterComplete(args, filtered, toComplete), cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
 		branch := args[0]

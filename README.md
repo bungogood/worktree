@@ -69,10 +69,12 @@ wrk new feature-branch custom-worktree-name
 # Add worktree from existing branch
 wrk add existing-branch
 wrk add existing-branch another-worktree-name
+wrk add existing-branch --remote upstream  # Create tracking branch from remote
 
 # Switch to a worktree (changes directory)
 wrk switch  # Switch to main worktree
 wrk switch feature-branch
+wrk switch JIRA-123-*  # Glob pattern matching
 
 # Remove worktrees
 wrk rm # Removes current worktree and switches to main worktree
@@ -135,11 +137,21 @@ All worktrees are created in a `.{repo-name}.worktrees` directory at the reposit
 ```
 projects/
 ├── .my-repo.worktrees/
-│   ├── .config.yml (optional stores wrk config)
-│   ├── another-worktree-name/
-│   └── feature-branch/
+│   ├── .config.yml (optional stores wrk config)
+│   ├── another-worktree-name/
+│   └── feature-branch/
 └── my-repo/
 ```
+
+### Glob Pattern Matching
+
+Commands like `switch` and `remove` support glob patterns for matching worktrees by name or branch:
+
+-   `*` - Matches any characters (e.g., `JIRA-*` matches all worktrees starting with "JIRA-")
+-   `?` - Matches a single character (e.g., `test-?` matches "test-1", "test-a", etc.)
+-   `[...]` - Matches character ranges (e.g., `feature-[0-9]*` matches "feature-1", "feature-123", etc.)
+
+Patterns match against both worktree **names** and **branch names**. **Tab completion** expands glob patterns to show matching worktrees.
 
 ### Skip-Worktree Strategy
 

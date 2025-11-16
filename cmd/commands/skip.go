@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/bungogood/worktree/pkg"
@@ -33,14 +32,8 @@ Use --rm flag to unskip files instead.`,
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			// Filter out already specified args
-			var completions []string
-			for _, file := range skipped {
-				if !slices.Contains(args, file) {
-					completions = append(completions, file)
-				}
-			}
-			return completions, cobra.ShellCompDirectiveNoFileComp
+
+			return pkg.GlobFilterComplete(args, skipped, toComplete), cobra.ShellCompDirectiveNoFileComp
 		}
 		// Otherwise use default file completion
 		return nil, cobra.ShellCompDirectiveDefault

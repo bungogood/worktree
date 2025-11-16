@@ -13,8 +13,9 @@ import (
 )
 
 type Config struct {
-	Copy     []string `yaml:"copy"`
-	Commands []string `yaml:"commands"`
+	Copy                     []string `yaml:"copy"`
+	Commands                 []string `yaml:"commands"`
+	DeleteBranchWithWorktree bool     `yaml:"deleteBranchWithWorktree"`
 }
 
 // ConfigPath returns the path to the config file

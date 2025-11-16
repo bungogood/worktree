@@ -157,8 +157,11 @@ func (r *Repo) RemoveWorktree(wt *Worktree, forceDeleteBranch bool) error {
 		return fmt.Errorf("failed to remove worktree: %w", err)
 	}
 
-	// Force delete the branch if requested
-	if forceDeleteBranch {
+	// Determine if we should delete the branch
+	shouldDeleteBranch := forceDeleteBranch || (r.Config != nil && r.Config.DeleteBranchWithWorktree)
+
+	// Delete the branch if requested
+	if shouldDeleteBranch {
 		_, err := r.RunGitCommand(r.MainWorktree, "branch", "-D", wt.Branch)
 		if err != nil {
 			return fmt.Errorf("failed to force delete branch: %w", err)

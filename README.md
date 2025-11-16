@@ -94,6 +94,9 @@ wrk copy --always-rm .env  # Remove from always-copy
 Optional config is stored in `.{repo}.worktrees/.config.yml`:
 
 ```yaml
+# Automatically delete the branch when removing a worktree
+deleteBranchWithWorktree: true
+
 # Files to automatically copy to new worktrees
 copy:
     - .env
@@ -133,5 +136,6 @@ When skipping files, the main worktree retains the original files while other wo
 ## References
 
 -   [zoxide](https://github.com/ajeetdsouza/zoxide) - Inspiration for the shell integration and directory switching pattern
+-   [brachlet](https://github.com/raghavpillai/branchlet) - A similar typescript tool for managing git branches and worktrees
 -   [git-worktree](https://git-scm.com/docs/git-worktree) - Git's official worktree documentation
 -   [git-update-index](https://git-scm.com/docs/git-update-index) - Documentation for skip-worktree functionality

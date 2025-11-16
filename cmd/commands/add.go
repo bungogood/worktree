@@ -12,7 +12,7 @@ var addCmd = &cobra.Command{
 	Short: "Add an existing branch as a worktree",
 	Long:  `Creates a new worktree for an existing local or remote branch and navigates to it. Optionally specify a custom directory name.`,
 	Args:  cobra.RangeArgs(1, 2),
-	ValidArgsFunction: pkg.RepoValidArgsFunction(func(
+	ValidArgsFunction: pkg.RepoCompletion(func(
 		repo *pkg.Repo,
 		cmd *cobra.Command,
 		args []string,

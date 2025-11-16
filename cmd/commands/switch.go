@@ -12,7 +12,7 @@ var switchCmd = &cobra.Command{
 	Short: "Switch to a worktree",
 	Long:  `Switch to an existing worktree by branch name. If no branch is specified, switches to the main worktree.`,
 	Args:  cobra.MaximumNArgs(1),
-	ValidArgsFunction: pkg.RepoValidArgsFunction(func(
+	ValidArgsFunction: pkg.RepoCompletion(func(
 		repo *pkg.Repo,
 		cmd *cobra.Command,
 		args []string,

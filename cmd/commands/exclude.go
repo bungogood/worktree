@@ -21,7 +21,7 @@ var excludeCmd = &cobra.Command{
 With no arguments, lists all excluded files.
 With file arguments, adds patterns to exclude.
 Use --rm flag to remove exclusions instead.`,
-	ValidArgsFunction: pkg.RepoValidArgsFunction(func(
+	ValidArgsFunction: pkg.RepoCompletion(func(
 		repo *pkg.Repo,
 		cmd *cobra.Command,
 		args []string,

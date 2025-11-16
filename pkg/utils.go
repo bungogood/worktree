@@ -36,7 +36,7 @@ func RepoCommand(fn func(*Repo, *cobra.Command, []string) error) func(*cobra.Com
 	}
 }
 
-func RepoValidArgsFunction(fn func(*Repo, *cobra.Command, []string, string) ([]string, cobra.ShellCompDirective)) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func RepoCompletion(fn func(*Repo, *cobra.Command, []string, string) ([]string, cobra.ShellCompDirective)) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		repo, err := LoadRepo()
 		if err != nil {

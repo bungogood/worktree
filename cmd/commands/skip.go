@@ -22,7 +22,7 @@ var skipCmd = &cobra.Command{
 With no arguments, lists all skipped files.
 With file arguments, marks files to have their changes skipped.
 Use --rm flag to unskip files instead.`,
-	ValidArgsFunction: pkg.RepoValidArgsFunction(func(
+	ValidArgsFunction: pkg.RepoCompletion(func(
 		repo *pkg.Repo,
 		cmd *cobra.Command,
 		args []string,

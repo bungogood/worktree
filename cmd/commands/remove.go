@@ -18,7 +18,7 @@ var removeCmd = &cobra.Command{
 	Aliases: []string{"rm"},
 	Short:   "Remove worktrees",
 	Long:    `Remove one or more worktrees. If no branches are specified, removes the current worktree. Cannot remove the main worktree.`,
-	ValidArgsFunction: pkg.RepoValidArgsFunction(func(
+	ValidArgsFunction: pkg.RepoCompletion(func(
 		repo *pkg.Repo,
 		cmd *cobra.Command,
 		args []string,

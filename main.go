@@ -1,7 +1,13 @@
 package main
 
-import "github.com/bungogood/worktree/cmd"
+import (
+	"os"
+
+	"github.com/bungogood/worktree/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	if err := cmd.RootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }

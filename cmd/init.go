@@ -13,6 +13,7 @@ var initCmd = &cobra.Command{
 	Short:     "Generate shell initialization script",
 	Long:      `Generate the initialization script for worktree with the 'wrk' alias.`,
 	ValidArgs: []string{"bash"},
+	Hidden:    true,
 	Args:      cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		shell := args[0]
@@ -51,15 +52,14 @@ wrk() {
             # No delimiter, just echo the output
             echo "$result"
         fi
-    else
-        echo "$result" >&2
-        return $exit_code
     fi
+
+    return $exit_code
 }
 `, pkg.CD_DELIMITER, pkg.CD_DELIMITER)
 
 		// Generate bash completions for the worktree command
-		rootCmd.GenBashCompletion(os.Stdout)
+		RootCmd.GenBashCompletion(os.Stdout)
 
 		// Add completion for wrk alias with default file completion
 		fmt.Println(`
@@ -69,5 +69,5 @@ complete -o default -F __start_worktree wrk`)
 }
 
 func init() {
-	rootCmd.AddCommand(initCmd)
+	RootCmd.AddCommand(initCmd)
 }

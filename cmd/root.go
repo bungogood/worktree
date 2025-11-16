@@ -26,4 +26,5 @@ func init() {
 	RootCmd.AddCommand(commands.NewRemoveCmd())
 	RootCmd.AddCommand(commands.NewSwitchCmd())
 	RootCmd.AddCommand(commands.NewSkipCmd())
+	RootCmd.AddCommand(commands.NewExcludeCmd())
 }

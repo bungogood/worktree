@@ -6,9 +6,10 @@ import (
 
 // Worktree represents a git worktree
 type Worktree struct {
-	Path   string // Absolute path to the worktree
-	Branch string // Branch name
-	Name   string // Worktree name
+	Path         string // Absolute path to the worktree
+	Branch       string // Branch name
+	Name         string // Worktree name
+	RemoteBranch string // Remote name if created from remote branch, empty if local
 }
 
 // FindWorktreeByBranch finds a worktree by branch name
@@ -41,7 +42,7 @@ func (r *Repo) FindWorktree(tree string) *Worktree {
 }
 
 // AddExistingBranch creates a worktree for an existing local or remote branch
-func (r *Repo) AddExistingBranch(branch, name string) (*Worktree, error) {
+func (r *Repo) AddExistingBranch(branch, name, remote string) (*Worktree, error) {
 	// Check if worktree already exists
 	if existing := r.FindWorktreeByName(name); existing != nil {
 		return nil, fmt.Errorf("worktree already exists: %s", name)
@@ -61,14 +62,15 @@ func (r *Repo) AddExistingBranch(branch, name string) (*Worktree, error) {
 
 	// Check if branch exists locally or on remote
 	var err error
+	remoteBranch := fmt.Sprintf("%s/%s", remote, branch)
 	if r.BranchExists(branch) {
 		// Branch exists locally
 		_, err = r.RunGitCommand(nil, "worktree", "add", worktreePath, branch)
-	} else if r.BranchExists(fmt.Sprintf("origin/%s", branch)) {
+	} else if r.BranchExists(remoteBranch) {
 		// Branch exists on remote, create worktree with tracking
-		_, err = r.RunGitCommand(nil, "worktree", "add", "-b", branch, worktreePath, fmt.Sprintf("origin/%s", branch))
+		_, err = r.RunGitCommand(nil, "worktree", "add", "-b", branch, worktreePath, remoteBranch)
 	} else {
-		return nil, fmt.Errorf("branch '%s' does not exist locally or on remote", branch)
+		return nil, fmt.Errorf("branch '%s' does not exist locally or on remote '%s'", branch, remote)
 	}
 
 	if err != nil {
@@ -76,9 +78,10 @@ func (r *Repo) AddExistingBranch(branch, name string) (*Worktree, error) {
 	}
 
 	wt := &Worktree{
-		Path:   worktreePath,
-		Branch: branch,
-		Name:   name,
+		Path:         worktreePath,
+		Branch:       branch,
+		Name:         name,
+		RemoteBranch: remoteBranch,
 	}
 
 	r.applyPostCreateSetup(wt)

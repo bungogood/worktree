@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	addRemote string
+)
+
 var addCmd = &cobra.Command{
 	Use:   "add <branch> [name]",
 	Short: "Add an existing branch as a worktree",
@@ -21,7 +25,7 @@ var addCmd = &cobra.Command{
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 
-		branches, err := repo.AllBranches()
+		branches, err := repo.AllBranches(addRemote)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
@@ -42,12 +46,16 @@ var addCmd = &cobra.Command{
 		}
 
 		// Try to add the existing branch
-		worktree, err := repo.AddExistingBranch(branch, name)
+		worktree, err := repo.AddExistingBranch(branch, name, addRemote)
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Worktree created: '%s'\n", name)
+		if worktree.RemoteBranch != "" {
+			fmt.Printf("Worktree created: '%s' (from %s)\n", name, worktree.RemoteBranch)
+		} else {
+			fmt.Printf("Worktree created: '%s'\n", name)
+		}
 		pkg.ChangeDirectory(worktree.Path)
 		return nil
 	}),
@@ -55,5 +63,6 @@ var addCmd = &cobra.Command{
 
 // NewAddCmd returns the add command
 func NewAddCmd() *cobra.Command {
+	addCmd.Flags().StringVar(&addRemote, "remote", "origin", "Remote to use for fetching branches")
 	return addCmd
 }

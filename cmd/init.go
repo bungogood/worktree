@@ -62,10 +62,10 @@ wrk() {
 		// Generate bash completions for the worktree command
 		fmt.Print(genBashCompletion())
 
-		// Add completion for wrk alias with default file completion
+		// Add completion for wrk and worktree with default file completion
 		fmt.Println(`
-# Enable completion for wrk alias
-complete -o default -F __start_worktree wrk`)
+# Enable completion for wrk and worktree
+complete -o default -F __start_wrk worktree`)
 	},
 }
 

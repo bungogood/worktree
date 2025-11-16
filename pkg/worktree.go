@@ -81,17 +81,7 @@ func (r *Repo) AddExistingBranch(branch, name string) (*Worktree, error) {
 		Name:   name,
 	}
 
-	// Apply skip-worktree settings to the new worktree
-	if err := r.applySkipSettingsToWorktree(wt); err != nil {
-		// Log error but don't fail the worktree creation
-		fmt.Printf("Warning: failed to apply skip settings: %v\n", err)
-	}
-
-	// Apply always-copy settings
-	if err := r.ApplyAlwaysCopy(wt); err != nil {
-		// Log error but don't fail the worktree creation
-		fmt.Printf("Warning: failed to apply always-copy: %v\n", err)
-	}
+	r.applyPostCreateSetup(wt)
 
 	return wt, nil
 }
@@ -128,6 +118,13 @@ func (r *Repo) CreateNewBranch(branch, name string) (*Worktree, error) {
 		Name:   name,
 	}
 
+	r.applyPostCreateSetup(wt)
+
+	return wt, nil
+}
+
+// applyPostCreateSetup applies all post-create operations to a worktree
+func (r *Repo) applyPostCreateSetup(wt *Worktree) {
 	// Apply skip-worktree settings to the new worktree
 	if err := r.applySkipSettingsToWorktree(wt); err != nil {
 		// Log error but don't fail the worktree creation
@@ -140,7 +137,11 @@ func (r *Repo) CreateNewBranch(branch, name string) (*Worktree, error) {
 		fmt.Printf("Warning: failed to apply always-copy: %v\n", err)
 	}
 
-	return wt, nil
+	// Run post-create commands
+	if err := r.RunPostCreateCommands(wt); err != nil {
+		// Log error but don't fail the worktree creation
+		fmt.Printf("Warning: failed to run post-create commands: %v\n", err)
+	}
 }
 
 // RemoveWorktree removes a worktree and optionally force deletes the branch

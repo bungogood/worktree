@@ -1,8 +1,11 @@
 package pkg
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -10,7 +13,8 @@ import (
 )
 
 type Config struct {
-	Copy []string `yaml:"copy"`
+	Copy     []string `yaml:"copy"`
+	Commands []string `yaml:"commands"`
 }
 
 // ConfigPath returns the path to the config file
@@ -133,6 +137,67 @@ func (r *Repo) PrintAlwaysCopy() error {
 
 	for _, path := range r.Config.Copy {
 		fmt.Printf("%s\n", path)
+	}
+
+	return nil
+}
+
+// RunPostCreateCommands runs all configured post-create commands in a worktree
+func (r *Repo) RunPostCreateCommands(wt *Worktree) error {
+	if r.Config == nil || len(r.Config.Commands) == 0 {
+		return nil
+	}
+
+	fmt.Printf("Running post-create commands...\n")
+	for i, cmdStr := range r.Config.Commands {
+		fmt.Printf("  [%d/%d] %s\n", i+1, len(r.Config.Commands), cmdStr)
+
+		cmd := exec.Command("bash", "-c", cmdStr)
+		cmd.Dir = wt.Path
+		cmd.Stdin = os.Stdin
+
+		// Create pipes for stdout and stderr
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			return fmt.Errorf("failed to create stdout pipe: %w", err)
+		}
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			return fmt.Errorf("failed to create stderr pipe: %w", err)
+		}
+
+		// Start the command
+		if err := cmd.Start(); err != nil {
+			return fmt.Errorf("command %d failed to start: %w", i+1, err)
+		}
+
+		// Function to prefix and print lines
+		printPrefixed := func(reader io.Reader, output *os.File) {
+			scanner := bufio.NewScanner(reader)
+			for scanner.Scan() {
+				fmt.Fprintf(output, "> %s\n", scanner.Text())
+			}
+		}
+
+		// Process stdout and stderr concurrently
+		done := make(chan bool, 2)
+		go func() {
+			printPrefixed(stdout, os.Stdout)
+			done <- true
+		}()
+		go func() {
+			printPrefixed(stderr, os.Stderr)
+			done <- true
+		}()
+
+		// Wait for both goroutines to finish
+		<-done
+		<-done
+
+		// Wait for the command to complete
+		if err := cmd.Wait(); err != nil {
+			return fmt.Errorf("command %d failed: %w", i+1, err)
+		}
 	}
 
 	return nil

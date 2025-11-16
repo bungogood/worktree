@@ -89,6 +89,22 @@ wrk copy --always .env  # Add to always-copy
 wrk copy --always-rm .env  # Remove from always-copy
 ```
 
+## Configuration
+
+Optional config is stored in `.{repo}.worktrees/.config.yml`:
+
+```yaml
+# Files to automatically copy to new worktrees
+copy:
+    - .env
+    - config/local.json
+
+# Commands to run after creating new worktrees
+commands:
+    - npm install
+    - go mod download
+```
+
 ## About
 
 ### Why `wrk` and `worktree`?

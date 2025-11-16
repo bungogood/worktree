@@ -25,35 +25,34 @@ var initCmd = &cobra.Command{
 		// Output the bash initialization script
 		fmt.Printf(`# worktree shell setup
 wrk() {
-    local result
-    result="$(worktree "$@")"
-    local exit_code=$?
-    
-    if [ $exit_code -eq 0 ]; then
-        # Check if the last line contains the delimiter
-        local last_line="$(echo "$result" | tail -n 1)"
-        
-        if [[ "$last_line" == %s* ]]; then
-            # Extract directory path after delimiter
-            local dir_path="${last_line#%s}"
-            
-            # Print all output except the last line (the delimiter line)
-            # Use sed to remove the last line (compatible with macOS)
-            local output="$(echo "$result" | sed '$d')"
-            if [ -n "$output" ]; then
-                echo "$output"
-            fi
-            
-            # Change directory
-            if [ -d "$dir_path" ]; then
-                cd "$dir_path" || return 1
-            fi
-        elif [ -n "$result" ]; then
-            # No delimiter, just echo the output
-            echo "$result"
-        fi
+    # If we're in completion mode, call worktree directly without processing
+    if [ -n "${COMP_LINE}" ]; then
+        worktree "$@"
+        return $?
     fi
-
+    
+    local dir_path=""
+    local exit_code=0
+    
+    # Stream output line by line and check for delimiter
+    while IFS= read -r line; do
+        if [[ "$line" == %s* ]]; then
+            # Found delimiter, extract directory path
+            dir_path="${line#%s}"
+        else
+            # Regular output, print immediately
+            echo "$line"
+        fi
+    done < <(worktree "$@" 2>&1)
+    
+    # Capture the exit code from the worktree command
+    exit_code=${PIPESTATUS[0]}
+    
+    # If we found a directory path, change to it
+    if [ -n "$dir_path" ] && [ -d "$dir_path" ]; then
+        cd "$dir_path" || return 1
+    fi
+    
     return $exit_code
 }
 `, pkg.CD_DELIMITER, pkg.CD_DELIMITER)

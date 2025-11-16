@@ -80,8 +80,13 @@ wrk exclude build/
 wrk exclude --rm build/
 
 # Copy files between worktrees
-wrk copy config/settings.json
+wrk copy config/settings.json  # Copy from main worktree
 wrk copy --from feature-branch src/utils.go src/
+
+# Always-copy: automatically copy to new worktrees
+wrk copy --always  # List always-copy paths
+wrk copy --always .env  # Add to always-copy
+wrk copy --always-rm .env  # Remove from always-copy
 ```
 
 ## About
@@ -98,10 +103,11 @@ All worktrees are created in a `.{repo-name}.worktrees` directory at the reposit
 
 ```
 projects/
-├── .my-repo.worktrees
-│   ├── another-worktree-name
-│   └── feature-branch
-└── my-repo
+├── .my-repo.worktrees/
+│   ├── .config.yml (optional stores wrk config)
+│   ├── another-worktree-name/
+│   └── feature-branch/
+└── my-repo/
 ```
 
 ### Skip-Worktree Strategy

@@ -87,6 +87,12 @@ func (r *Repo) AddExistingBranch(branch, name string) (*Worktree, error) {
 		fmt.Printf("Warning: failed to apply skip settings: %v\n", err)
 	}
 
+	// Apply always-copy settings
+	if err := r.ApplyAlwaysCopy(wt); err != nil {
+		// Log error but don't fail the worktree creation
+		fmt.Printf("Warning: failed to apply always-copy: %v\n", err)
+	}
+
 	return wt, nil
 }
 
@@ -126,6 +132,12 @@ func (r *Repo) CreateNewBranch(branch, name string) (*Worktree, error) {
 	if err := r.applySkipSettingsToWorktree(wt); err != nil {
 		// Log error but don't fail the worktree creation
 		fmt.Printf("Warning: failed to apply skip settings: %v\n", err)
+	}
+
+	// Apply always-copy settings
+	if err := r.ApplyAlwaysCopy(wt); err != nil {
+		// Log error but don't fail the worktree creation
+		fmt.Printf("Warning: failed to apply always-copy: %v\n", err)
 	}
 
 	return wt, nil

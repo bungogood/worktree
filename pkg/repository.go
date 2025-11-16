@@ -15,6 +15,7 @@ type Repo struct {
 	Worktrees       []Worktree // All worktrees in the repo
 	MainWorktree    *Worktree  // The main worktree (contains .git directory)
 	CurrentWorktree *Worktree  // The worktree we're currently in
+	Config          *Config    // Configuration settings
 }
 
 // LoadRepo discovers the git repository and all its worktrees
@@ -60,6 +61,13 @@ func LoadRepo() (*Repo, error) {
 			break
 		}
 	}
+
+	// Load configuration
+	config, err := repo.LoadConfig()
+	if err != nil {
+		return nil, err
+	}
+	repo.Config = config
 
 	return repo, nil
 }

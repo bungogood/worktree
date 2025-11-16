@@ -143,9 +143,8 @@ func (r *Repo) PrintExcludedPatterns() error {
 		return nil
 	}
 
-	fmt.Println("Excluded patterns:")
 	for _, pattern := range patterns {
-		fmt.Printf("  %s\n", pattern)
+		fmt.Printf("%s\n", pattern)
 	}
 
 	return nil

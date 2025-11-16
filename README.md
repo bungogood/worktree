@@ -12,7 +12,19 @@ Work on multiple features simultaneously in separate directories while maintaini
 go install github.com/bungogood/worktree@latest
 ```
 
-Add to your `~/.bashrc` or `~/.bash_profile`:
+The binary is installed to your Go binary directory (typically `$HOME/go/bin` on Linux/macOS or `%USERPROFILE%\go\bin` on Windows).
+
+**If the `worktree` command is not found**, add the Go binary directory to your `PATH`:
+
+```bash
+# Add to ~/.bashrc, ~/.bash_profile, or ~/.zshrc
+export PATH="$HOME/go/bin:$PATH"
+
+# Or if you have a custom GOPATH
+export PATH="$(go env GOPATH)/bin:$PATH"
+```
+
+Then add the shell integration for directory switching to your shell configuration (e.g. `~/.bashrc` or `~/.zshrc`):
 
 ```bash
 eval "$(worktree init bash)"

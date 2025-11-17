@@ -62,6 +62,10 @@ func LoadRepo() (*Repo, error) {
 		}
 	}
 
+	if repo.CurrentWorktree == nil {
+		return nil, fmt.Errorf("current directory is not inside any worktree")
+	}
+
 	// Load configuration
 	config, err := repo.LoadConfig()
 	if err != nil {

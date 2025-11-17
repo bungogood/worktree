@@ -22,6 +22,10 @@ var removeCmd = &cobra.Command{
 		cmd *cobra.Command,
 		args []string,
 		toComplete string) ([]string, cobra.ShellCompDirective) {
+		// Remove main worktree from completions
+		args = append(args, repo.MainWorktree.Name)
+		args = append(args, repo.MainWorktree.Branch)
+
 		return pkg.GlobFilterComplete(args, repo.WorktreeAliases(), toComplete), cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {

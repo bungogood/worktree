@@ -19,6 +19,10 @@ var switchCmd = &cobra.Command{
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 
+		// Remove current worktree from completions
+		args = append(args, repo.CurrentWorktree.Name)
+		args = append(args, repo.CurrentWorktree.Branch)
+
 		return pkg.GlobFilterComplete(args, repo.WorktreeAliases(), toComplete), cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {

@@ -21,7 +21,7 @@ func (r *Repo) GetWorktreeMarker(wt *Worktree) WorktreeMarker {
 	if r.IsMainWorktree(wt) {
 		return MarkerMain
 	}
-	if r.CurrentWorktree != nil && wt.Path == r.CurrentWorktree.Path {
+	if wt.Path == r.CurrentWorktree.Path {
 		return MarkerCurrent
 	}
 	return MarkerNone
@@ -65,16 +65,6 @@ func (r *Repo) SortedWorktrees() []Worktree {
 		}
 		if r.IsMainWorktree(&sorted[j]) {
 			return false
-		}
-
-		// Current worktree comes second
-		if r.CurrentWorktree != nil {
-			if sorted[i].Path == r.CurrentWorktree.Path {
-				return true
-			}
-			if sorted[j].Path == r.CurrentWorktree.Path {
-				return false
-			}
 		}
 
 		// Otherwise sort alphabetically by name

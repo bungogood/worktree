@@ -3,14 +3,8 @@ package pkg
 import (
 	"fmt"
 	"sort"
-)
 
-// ANSI color codes
-const (
-	ColorReset  = "\033[0m"
-	ColorGreen  = "\033[32m"
-	ColorCyan   = "\033[36m"
-	ColorYellow = "\033[33m"
+	"github.com/fatih/color"
 )
 
 // WorktreeMarker represents the marker type for a worktree
@@ -34,7 +28,7 @@ func (r *Repo) GetWorktreeMarker(wt *Worktree) WorktreeMarker {
 }
 
 // GetWorktreeDisplay returns the formatted display string for a worktree
-func (r *Repo) GetWorktreeDisplay(wt *Worktree, useColor bool) string {
+func (r *Repo) GetWorktreeDisplay(wt *Worktree) string {
 	marker := r.GetWorktreeMarker(wt)
 
 	// Build the display name
@@ -48,14 +42,10 @@ func (r *Repo) GetWorktreeDisplay(wt *Worktree, useColor bool) string {
 	switch marker {
 	case MarkerMain:
 		prefix = "> "
-		if useColor {
-			display = ColorCyan + display + ColorReset
-		}
+		display = color.CyanString(display)
 	case MarkerCurrent:
 		prefix = "* "
-		if useColor {
-			display = ColorGreen + display + ColorReset
-		}
+		display = color.GreenString(display)
 	default:
 		prefix = "  "
 	}

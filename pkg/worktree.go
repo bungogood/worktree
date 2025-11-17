@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 // Worktree represents a git worktree
@@ -180,19 +182,19 @@ func (r *Repo) applyPostCreateSetup(wt *Worktree) {
 	// Apply skip-worktree settings to the new worktree
 	if err := r.applySkipSettingsToWorktree(wt); err != nil {
 		// Log error but don't fail the worktree creation
-		fmt.Printf("Warning: failed to apply skip settings: %v\n", err)
+		color.Yellow("Warning: failed to apply skip settings: %v\n", err)
 	}
 
 	// Apply always-copy settings
 	if err := r.ApplyAlwaysCopy(wt); err != nil {
 		// Log error but don't fail the worktree creation
-		fmt.Printf("Warning: failed to apply always-copy: %v\n", err)
+		color.Yellow("Warning: failed to apply always-copy: %v\n", err)
 	}
 
 	// Run post-create commands
 	if err := r.RunPostCreateCommands(wt); err != nil {
 		// Log error but don't fail the worktree creation
-		fmt.Printf("Warning: failed to run post-create commands: %v\n", err)
+		color.Yellow("Warning: failed to run post-create commands: %v\n", err)
 	}
 }
 

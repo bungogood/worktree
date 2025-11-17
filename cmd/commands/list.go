@@ -7,10 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	noColor bool
-)
-
 var listCmd = &cobra.Command{
 	Use:               "list",
 	Aliases:           []string{"ls"},
@@ -24,15 +20,12 @@ var listCmd = &cobra.Command{
 			return nil
 		}
 
-		// Determine if we should use color (check if stdout is a terminal)
-		useColor := !noColor && pkg.IsTerminal()
-
 		// Get sorted worktrees (main first, current second, then alphabetically)
 		worktrees := repo.SortedWorktrees()
 
 		// Display each worktree
 		for _, wt := range worktrees {
-			display := repo.GetWorktreeDisplay(&wt, useColor)
+			display := repo.GetWorktreeDisplay(&wt)
 			fmt.Println(display)
 		}
 		return nil
@@ -41,6 +34,5 @@ var listCmd = &cobra.Command{
 
 // NewListCmd returns the list command
 func NewListCmd() *cobra.Command {
-	listCmd.Flags().BoolVar(&noColor, "no-color", false, "Disable colored output")
 	return listCmd
 }

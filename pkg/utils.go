@@ -16,6 +16,7 @@ const CD_DELIMITER = "__WORKTREE_CD__"
 
 type GFlags struct {
 	Verbose bool
+	NoColor bool
 }
 
 var GlobalFlags GFlags

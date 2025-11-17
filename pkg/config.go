@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	"gopkg.in/yaml.v3"
 )
 
@@ -176,7 +177,19 @@ func (r *Repo) RunPostCreateCommands(wt *Worktree) error {
 		printPrefixed := func(reader io.Reader, output *os.File) {
 			scanner := bufio.NewScanner(reader)
 			for scanner.Scan() {
-				fmt.Fprintf(output, "> %s\n", scanner.Text())
+				text := scanner.Text()
+				if output == os.Stderr {
+					lowerText := strings.ToLower(text)
+					if strings.Contains(lowerText, "error") {
+						fmt.Fprintf(output, "! %s\n", color.RedString(text))
+					} else if strings.Contains(lowerText, "warn") {
+						fmt.Fprintf(output, "! %s\n", color.YellowString(text))
+					} else {
+						fmt.Fprintf(output, "! %s\n", color.RedString(text))
+					}
+				} else {
+					fmt.Fprintf(output, "> %s\n", color.BlueString(scanner.Text()))
+				}
 			}
 		}
 

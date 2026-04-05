@@ -136,14 +136,15 @@ func (r *Repo) loadWorktrees() error {
 }
 
 func (r *Repo) AllBranches(remote string) ([]string, error) {
-	// find all branches of the repo not just work tree one
-	output, err := r.RunGitCommand(nil, "branch", "--all", "--format=%(refname:short)")
+	// List local branches and branches from the selected remote.
+	output, err := r.RunGitCommand(nil, "for-each-ref", "--format=%(refname:short)", "refs/heads", fmt.Sprintf("refs/remotes/%s", remote))
 	if err != nil {
 		return nil, fmt.Errorf("failed to list branches: %w", err)
 	}
 
 	lines := strings.Split(string(output), "\n")
 	branches := make([]string, 0, len(lines))
+	seen := make(map[string]bool, len(lines))
 	remotePrefix := remote + "/"
 
 	for _, line := range lines {
@@ -153,10 +154,10 @@ func (r *Repo) AllBranches(remote string) ([]string, error) {
 			if after, ok := strings.CutPrefix(branch, remotePrefix); ok {
 				branch = after
 			}
-			// Skip if it's a different remote's branch
-			if strings.Contains(branch, "/") {
+			if seen[branch] {
 				continue
 			}
+			seen[branch] = true
 			branches = append(branches, branch)
 		}
 	}

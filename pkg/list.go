@@ -58,16 +58,24 @@ func (r *Repo) SortedWorktrees() []Worktree {
 	sorted := make([]Worktree, len(r.Worktrees))
 	copy(sorted, r.Worktrees)
 
-	sort.Slice(sorted, func(i, j int) bool {
-		// Main worktree always comes first
-		if r.IsMainWorktree(&sorted[i]) {
-			return true
+	rank := func(wt *Worktree) int {
+		if r.IsMainWorktree(wt) {
+			return 0
 		}
-		if r.IsMainWorktree(&sorted[j]) {
-			return false
+		if r.CurrentWorktree != nil && wt.Path == r.CurrentWorktree.Path {
+			return 1
+		}
+		return 2
+	}
+
+	sort.Slice(sorted, func(i, j int) bool {
+		ri := rank(&sorted[i])
+		rj := rank(&sorted[j])
+		if ri != rj {
+			return ri < rj
 		}
 
-		// Otherwise sort alphabetically by name
+		// Otherwise sort alphabetically by name.
 		return sorted[i].Name < sorted[j].Name
 	})
 

@@ -46,11 +46,11 @@ export PATH="$(go env GOPATH)/bin:$PATH"
 
 ### Full Bash Setup (recommended)
 
-Run once to install the `wrk` shell shim and persistent bash completion:
+Run once to install the `wrk` shell hook and persistent bash completion:
 
 ```bash
 mkdir -p "$HOME/.local/scripts" "$HOME/.local/share/bash-completion/completions"
-worktree init bash > "$HOME/.local/scripts/wrk-shim.sh"
+worktree hook bash > "$HOME/.local/scripts/wrk-hook.sh"
 worktree completion bash > "$HOME/.local/share/bash-completion/completions/worktree"
 ln -sf "$HOME/.local/share/bash-completion/completions/worktree" "$HOME/.local/share/bash-completion/completions/wrk"
 ```
@@ -58,13 +58,13 @@ ln -sf "$HOME/.local/share/bash-completion/completions/worktree" "$HOME/.local/s
 Add this line to `~/.bashrc`:
 
 ```bash
-source "$HOME/.local/scripts/wrk-shim.sh"
+source "$HOME/.local/scripts/wrk-hook.sh"
 ```
 
 Temporary session only (no files written):
 
 ```bash
-eval "$(worktree init bash)"
+eval "$(worktree hook bash)"
 source <(worktree completion bash)
 ```
 

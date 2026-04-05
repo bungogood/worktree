@@ -6,6 +6,32 @@ A CLI for creating, switching, and managing Git worktrees with fast shell naviga
 
 Work on multiple features in separate directories and switch between them instantly. Each worktree is an independent working directory linked to the same repository, so you can keep in-progress changes isolated without stashing or committing.
 
+## Features
+
+- Create and jump to new or existing branch worktrees in one command
+- Shell-native directory switching with `wrk` (like `z` for `zoxide`)
+- Glob-aware worktree selection with tab completion (`wrk switch feature/*`)
+- Built-in skip/exclude/copy workflows to reduce repeated setup across worktrees
+
+## Demo
+
+Quick terminal walkthrough:
+
+```bash
+wrk new feature/demo
+wrk switch main
+wrk switch feature/*
+wrk list
+wrk rm feature/demo
+```
+
+To record your own asciinema demo for this repo:
+
+```bash
+asciinema rec /tmp/worktree-demo.cast
+asciinema play /tmp/worktree-demo.cast
+```
+
 ## Installation
 
 ```bash
@@ -59,44 +85,16 @@ wrk list
 wrk rm feature/my-change
 ```
 
-All commands are also available through `worktree`.
-
-### Command List
-
-```
-A CLI tool for managing git worktrees with automatic organisation and navigation.
-
-Usage:
-  wrk [command]
-
-Available Commands:
-  add         Add an existing branch as a worktree
-  completion  Generate shell completion script
-  copy        Copy files from another worktree
-  exclude     Manage excluded untracked files
-  help        Help about any command
-  list        List all worktrees
-  new         Create a new branch as a worktree
-  remove      Remove worktrees
-  skip        Manage skipped file changes
-  switch      Switch to a worktree
-
-Flags:
-  -h, --help      help for worktree
-  -v, --verbose   Show all git commands being executed
-```
+All commands are also available through `worktree`. Use `wrk --help` for full command details.
 
 ## Examples
 
 ```bash
-# List all worktrees
-wrk list
-
-# Create new worktree from new branch
+# Create a worktree from a new branch
 wrk new feature-branch
 wrk new feature-branch custom-worktree-name
 
-# Add worktree from existing branch
+# Add a worktree from an existing branch
 wrk add existing-branch
 wrk add existing-branch another-worktree-name
 wrk add existing-branch --remote upstream  # Create tracking branch from remote
@@ -107,13 +105,13 @@ wrk switch feature-branch
 wrk switch JIRA-123-*  # Glob pattern matching
 
 # Remove worktrees
-wrk rm # Removes current worktree and switches to main worktree
+wrk rm  # Removes current worktree and switches to main worktree
 wrk rm feature-branch
 wrk rm branch-1 branch-2 branch-3
 wrk rm -D feature-branch  # Deletes branch
 
 # Skip file changes across all worktrees
-wrk skip  # Lists skipped files
+wrk skip  # List skipped files
 wrk skip config/local.json
 wrk skip --rm config/local.json
 wrk skip --local file.txt  # Only current worktree
@@ -143,18 +141,18 @@ deleteBranchWithWorktree: true
 
 # Files to automatically copy to new worktrees
 copy:
-    - .env
-    - config/local.json
+  - .env
+  - config/local.json
 
 # Commands to run after creating new worktrees
 commands:
-    - npm install
-    - go mod download
+  - npm install
+  - go mod download
 ```
 
-## About
+## How It Works
 
-### Why `wrk` and `worktree`?
+### `wrk` vs `worktree`
 
 This tool provides both a binary (`worktree`) and a bash wrapper function (`wrk`). The wrapper is required for directory switching, as processes cannot change their parent shell's working directory.
 
@@ -177,9 +175,9 @@ projects/
 
 Commands like `switch` and `remove` support glob patterns for matching worktrees by name or branch:
 
--   `*` - Matches any characters (e.g., `JIRA-*` matches all worktrees starting with "JIRA-")
--   `?` - Matches a single character (e.g., `test-?` matches "test-1", "test-a", etc.)
--   `[...]` - Matches character ranges (e.g., `feature-[0-9]*` matches "feature-1", "feature-123", etc.)
+- `*` matches any characters (for example, `JIRA-*`)
+- `?` matches a single character (for example, `test-?`)
+- `[...]` matches character ranges (for example, `feature-[0-9]*`)
 
 Patterns match against both worktree **names** and **branch names**. **Tab completion** expands glob patterns to show matching worktrees.
 
@@ -187,9 +185,21 @@ Patterns match against both worktree **names** and **branch names**. **Tab compl
 
 When skipping files, the main worktree retains the original files while other worktrees use symlinks pointing to the main worktree. This ensures consistency across all worktrees while also allowing local modifications when needed.
 
+## Development
+
+Run tests:
+
+```bash
+go test ./...
+```
+
 ## References
 
--   [zoxide](https://github.com/ajeetdsouza/zoxide) - Inspiration for the shell integration and directory switching pattern
--   [brachlet](https://github.com/raghavpillai/branchlet) - A similar typescript tool for managing git branches and worktrees
--   [git-worktree](https://git-scm.com/docs/git-worktree) - Git's official worktree documentation
--   [git-update-index](https://git-scm.com/docs/git-update-index) - Documentation for skip-worktree functionality
+- [zoxide](https://github.com/ajeetdsouza/zoxide) - Inspiration for shell integration and directory switching
+- [branchlet](https://github.com/raghavpillai/branchlet) - Similar tool for branch and worktree workflows
+- [git-worktree](https://git-scm.com/docs/git-worktree) - Git's official worktree documentation
+- [git-update-index](https://git-scm.com/docs/git-update-index) - Documentation for skip-worktree behavior
+
+## License
+
+[MIT](LICENSE)

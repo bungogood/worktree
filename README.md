@@ -6,6 +6,8 @@ A CLI for creating, switching, and managing Git worktrees with fast shell naviga
 
 Work on multiple features in separate directories and switch between them instantly. Each worktree is an independent working directory linked to the same repository, so you can keep in-progress changes isolated without stashing or committing.
 
+![Worktree demo](docs/worktree-demo.gif)
+
 ## Features
 
 - Create and jump to new or existing branch worktrees in one command
@@ -13,59 +15,18 @@ Work on multiple features in separate directories and switch between them instan
 - Glob-aware worktree selection with tab completion (`wrk switch feature/*`)
 - Built-in skip/exclude/copy workflows to reduce repeated setup across worktrees
 
-## Demo
-
-Quick terminal walkthrough:
-
-```bash
-wrk new feature/demo
-wrk switch main
-wrk switch feature/*
-wrk list
-wrk rm feature/demo
-```
-
-To record your own asciinema demo for this repo:
-
-```bash
-asciinema rec /tmp/worktree-demo.cast
-asciinema play /tmp/worktree-demo.cast
-```
-
 ## Installation
 
 ```bash
 go install github.com/bungogood/worktree@latest
+eval "$(worktree hook bash)"
+eval "$(worktree completion bash)"
 ```
 
 If `worktree` is not found, add Go's bin directory to your `PATH`:
 
 ```bash
 export PATH="$(go env GOPATH)/bin:$PATH"
-```
-
-### Full Bash Setup (recommended)
-
-Run once to install the `wrk` shell hook and persistent bash completion:
-
-```bash
-mkdir -p "$HOME/.local/scripts" "$HOME/.local/share/bash-completion/completions"
-worktree hook bash > "$HOME/.local/scripts/wrk-hook.sh"
-worktree completion bash > "$HOME/.local/share/bash-completion/completions/worktree"
-ln -sf "$HOME/.local/share/bash-completion/completions/worktree" "$HOME/.local/share/bash-completion/completions/wrk"
-```
-
-Add this line to `~/.bashrc`:
-
-```bash
-source "$HOME/.local/scripts/wrk-hook.sh"
-```
-
-Temporary session only (no files written):
-
-```bash
-eval "$(worktree hook bash)"
-source <(worktree completion bash)
 ```
 
 ## Usage
@@ -141,13 +102,13 @@ deleteBranchWithWorktree: true
 
 # Files to automatically copy to new worktrees
 copy:
-  - .env
-  - config/local.json
+    - .env
+    - config/local.json
 
 # Commands to run after creating new worktrees
 commands:
-  - npm install
-  - go mod download
+    - npm install
+    - go mod download
 ```
 
 ## How It Works

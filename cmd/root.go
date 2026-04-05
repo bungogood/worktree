@@ -12,6 +12,7 @@ var RootCmd = &cobra.Command{
 	Short: "Git worktree manager",
 	Long:  `A CLI tool for managing git worktrees with automatic organisation and navigation.`,
 	CompletionOptions: cobra.CompletionOptions{
+		DisableDefaultCmd: true,
 		HiddenDefaultCmd: true,
 	},
 	SilenceUsage: true,

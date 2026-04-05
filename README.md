@@ -2,9 +2,9 @@
 
 [![Build](../../actions/workflows/build.yml/badge.svg)](../../actions/workflows/build.yml)
 
-A CLI tool for managing git worktrees with automatic organisation and navigation.
+A CLI for creating, switching, and managing Git worktrees with fast shell navigation.
 
-Work on multiple features simultaneously in separate directories while maintaining the ability to switch between them. Each worktree is an independent working directory linked to the same repository, allowing you to keep work-in-progress changes isolated without stashing or committing.
+Work on multiple features in separate directories and switch between them instantly. Each worktree is an independent working directory linked to the same repository, so you can keep in-progress changes isolated without stashing or committing.
 
 ## Installation
 
@@ -12,27 +12,56 @@ Work on multiple features simultaneously in separate directories while maintaini
 go install github.com/bungogood/worktree@latest
 ```
 
-The binary is installed to your Go binary directory (typically `$HOME/go/bin` on Linux/macOS or `%USERPROFILE%\go\bin` on Windows).
-
-**If the `worktree` command is not found**, add the Go binary directory to your `PATH`:
+If `worktree` is not found, add Go's bin directory to your `PATH`:
 
 ```bash
-# Add to ~/.bashrc, ~/.bash_profile, or ~/.zshrc
-export PATH="$HOME/go/bin:$PATH"
-
-# Or if you have a custom GOPATH
 export PATH="$(go env GOPATH)/bin:$PATH"
 ```
 
-Then add the shell integration for directory switching to your shell configuration (e.g. `~/.bashrc` or `~/.zshrc`):
+### Full Bash Setup (recommended)
+
+Run once to install the `wrk` shell shim and persistent bash completion:
+
+```bash
+mkdir -p "$HOME/.local/scripts" "$HOME/.local/share/bash-completion/completions"
+worktree init bash > "$HOME/.local/scripts/wrk-shim.sh"
+worktree completion bash > "$HOME/.local/share/bash-completion/completions/worktree"
+ln -sf "$HOME/.local/share/bash-completion/completions/worktree" "$HOME/.local/share/bash-completion/completions/wrk"
+```
+
+Add this line to `~/.bashrc`:
+
+```bash
+source "$HOME/.local/scripts/wrk-shim.sh"
+```
+
+Temporary session only (no files written):
 
 ```bash
 eval "$(worktree init bash)"
+source <(worktree completion bash)
 ```
 
 ## Usage
 
-Use `wrk` for interactive commands that switch directories, or `worktree` for scripting.
+Use `wrk` for interactive commands that switch directories, or `worktree` for scripting (`wrk` is to `worktree` what `z` is to `zoxide`).
+
+```bash
+# Create and jump to a new worktree
+wrk new feature/my-change
+
+# Switch between worktrees
+wrk switch
+wrk switch feature/*
+
+# List and remove
+wrk list
+wrk rm feature/my-change
+```
+
+All commands are also available through `worktree`.
+
+### Command List
 
 ```
 A CLI tool for managing git worktrees with automatic organisation and navigation.
@@ -42,6 +71,7 @@ Usage:
 
 Available Commands:
   add         Add an existing branch as a worktree
+  completion  Generate shell completion script
   copy        Copy files from another worktree
   exclude     Manage excluded untracked files
   help        Help about any command

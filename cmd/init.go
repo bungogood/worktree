@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/bungogood/worktree/pkg"
 	"github.com/spf13/cobra"
@@ -55,34 +53,12 @@ wrk() {
         cd "$dir_path" || return 1
     fi
     
-    return $exit_code
+	return $exit_code
 }
 `, pkg.CD_DELIMITER, pkg.CD_DELIMITER)
-
-		// Generate bash completions for the worktree command
-		fmt.Print(genBashCompletion())
-
-		// Add completion for wrk and worktree with default file completion
-		fmt.Println(`
-# Enable completion for wrk and worktree
-complete -o default -F __start_wrk worktree`)
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(initCmd)
-}
-
-func genBashCompletion() string {
-	var buf bytes.Buffer
-	RootCmd.GenBashCompletion(&buf)
-
-	// Rewrite compgen lines to avoid prefix filtering
-	result := strings.ReplaceAll(
-		buf.String(),
-		`done < <(compgen -W "${out}" -- "$cur")`,
-		`done < <(printf "%s" "${out}")`,
-	)
-
-	return result
 }

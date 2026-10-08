@@ -1,0 +1,10 @@
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/gix_quote-7c7934df02b0cfe8.d: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/ansi_c.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/single.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/display.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_quote-7c7934df02b0cfe8.rlib: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/ansi_c.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/single.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/display.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_quote-7c7934df02b0cfe8.rmeta: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/ansi_c.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/single.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/display.rs
+
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/lib.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/ansi_c.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/single.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-quote-0.10.0/src/display.rs:

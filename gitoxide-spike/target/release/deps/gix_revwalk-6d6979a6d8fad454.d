@@ -1,0 +1,10 @@
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/gix_revwalk-6d6979a6d8fad454.d: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/graph/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/graph/commit.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/queue.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_revwalk-6d6979a6d8fad454.rlib: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/graph/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/graph/commit.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/queue.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_revwalk-6d6979a6d8fad454.rmeta: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/graph/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/graph/commit.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/queue.rs
+
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/lib.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/graph/mod.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/graph/commit.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-revwalk-0.37.0/src/queue.rs:

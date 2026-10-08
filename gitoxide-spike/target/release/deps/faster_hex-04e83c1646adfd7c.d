@@ -1,0 +1,10 @@
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/faster_hex-04e83c1646adfd7c.d: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/decode.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/encode.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/error.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libfaster_hex-04e83c1646adfd7c.rlib: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/decode.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/encode.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/error.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libfaster_hex-04e83c1646adfd7c.rmeta: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/decode.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/encode.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/error.rs
+
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/lib.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/decode.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/encode.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faster-hex-0.10.1/src/error.rs:

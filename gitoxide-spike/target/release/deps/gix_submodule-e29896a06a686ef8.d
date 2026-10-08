@@ -1,0 +1,10 @@
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/gix_submodule-e29896a06a686ef8.d: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/access.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/config.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/is_active_platform.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_submodule-e29896a06a686ef8.rlib: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/access.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/config.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/is_active_platform.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_submodule-e29896a06a686ef8.rmeta: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/access.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/config.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/is_active_platform.rs
+
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/lib.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/access.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/config.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-submodule-0.36.0/src/is_active_platform.rs:

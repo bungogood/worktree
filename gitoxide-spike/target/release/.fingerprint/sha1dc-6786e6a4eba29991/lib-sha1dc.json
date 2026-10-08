@@ -1,0 +1,1 @@
+{"rustc":6241836141539365235,"features":"[\"std\"]","declared_features":"[\"default\", \"std\"]","target":12553794269484213608,"profile":2040997289075261528,"path":10046813995321995751,"deps":[],"local":[{"CheckDepInfo":{"dep_info":"release/.fingerprint/sha1dc-6786e6a4eba29991/dep-lib-sha1dc","checksum":false}}],"rustflags":[],"config":9396254390672932401,"compile_kind":0}

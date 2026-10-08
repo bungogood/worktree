@@ -1,14 +1,2 @@
-# Editor
-.vscode/
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool
-*.out
-
-# Go workspace file
-go.work
-
-# Project binary (rooted so cmd/wrk/ sources are still tracked)
-/wrk
+# spike build output
+/target/

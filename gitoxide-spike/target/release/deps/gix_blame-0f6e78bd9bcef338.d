@@ -1,0 +1,10 @@
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/gix_blame-0f6e78bd9bcef338.d: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/types.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/file/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/file/function.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_blame-0f6e78bd9bcef338.rlib: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/types.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/file/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/file/function.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_blame-0f6e78bd9bcef338.rmeta: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/types.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/file/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/file/function.rs
+
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/lib.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/types.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/file/mod.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-blame-0.19.0/src/file/function.rs:

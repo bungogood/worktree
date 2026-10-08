@@ -1,0 +1,15 @@
+error[E0433]: cannot find `core` in the crate root
+ --> <anon>:1:9
+  |
+1 | pub use core::error::Error;
+  |         ^^^^ you might be missing crate `core`
+  |
+help: try using `std` instead of `core`
+  |
+1 - pub use core::error::Error;
+1 + pub use std::error::Error;
+  |
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0433`.

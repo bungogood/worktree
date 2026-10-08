@@ -1,0 +1,10 @@
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/gix_negotiate-691d6c45f38cc390.d: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/consecutive.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/noop.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/skipping.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_negotiate-691d6c45f38cc390.rlib: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/consecutive.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/noop.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/skipping.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libgix_negotiate-691d6c45f38cc390.rmeta: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/consecutive.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/noop.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/skipping.rs
+
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/lib.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/consecutive.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/noop.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gix-negotiate-0.37.0/src/skipping.rs:

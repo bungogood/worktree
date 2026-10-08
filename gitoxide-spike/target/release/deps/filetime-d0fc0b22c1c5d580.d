@@ -1,0 +1,10 @@
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/filetime-d0fc0b22c1c5d580.d: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/utimes.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/macos.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libfiletime-d0fc0b22c1c5d580.rlib: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/utimes.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/macos.rs
+
+/Users/jonathan/projects/tools/.worktree.worktrees/spike-gitoxide/gitoxide-spike/target/release/deps/libfiletime-d0fc0b22c1c5d580.rmeta: /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/lib.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/mod.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/utimes.rs /Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/macos.rs
+
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/lib.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/mod.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/utimes.rs:
+/Users/jonathan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/filetime-0.2.29/src/unix/macos.rs:

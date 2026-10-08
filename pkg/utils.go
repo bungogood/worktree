@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const CD_DELIMITER = "__WORKTREE_CD__"
+const CD_DELIMITER = "wrk:cd:"
 
 type GFlags struct {
 	Verbose bool

@@ -18,20 +18,14 @@ Work on multiple features in separate directories and switch between them instan
 ## Installation
 
 ```bash
-go install github.com/bungogood/worktree@latest
-eval "$(worktree hook bash)"
-eval "$(worktree completion bash)"
+go install github.com/bungogood/worktree/cmd/wrk@latest
+eval "$(wrk hook bash)"
+eval "$(wrk completion bash)"
 ```
 
-Sourcing the hook also installs a `wrk` command next to the `worktree`
-binary (same directory symlink) for non-interactive use by agents and
-scripts. Without the hook, create it manually:
+The binary is `wrk`.
 
-```bash
-ln -s "$(command -v worktree)" "$(dirname "$(command -v worktree)")/wrk"
-```
-
-If `worktree` is not found, add Go's bin directory to your `PATH`:
+If `wrk` is not found, add Go's bin directory to your `PATH`:
 
 ```bash
 export PATH="$(go env GOPATH)/bin:$PATH"
@@ -39,7 +33,7 @@ export PATH="$(go env GOPATH)/bin:$PATH"
 
 ## Usage
 
-Use `wrk` for interactive commands that switch directories, or `worktree` for scripting (`wrk` is to `worktree` what `z` is to `zoxide`).
+Use `wrk` for everything, including interactive commands that switch directories (`wrk` is to plain directory switching what `z` is to `zoxide`).
 
 ```bash
 # Create and jump to a new worktree
@@ -54,7 +48,7 @@ wrk list
 wrk rm feature/my-change
 ```
 
-All commands are also available through `worktree`. Use `wrk --help` for full command details.
+Use `wrk --help` for full command details.
 
 ## Examples
 
@@ -121,11 +115,11 @@ commands:
 
 ## How It Works
 
-### `wrk` vs `worktree`
+### `wrk` function vs `wrk` binary
 
-This tool provides both a binary (`worktree`) and a bash wrapper function (`wrk`). The wrapper is required for directory switching, as processes cannot change their parent shell's working directory.
+This tool provides both a binary (`wrk`) and a bash wrapper function (also `wrk`, shadowing the binary in interactive shells). The wrapper is required for directory switching, as processes cannot change their parent shell's working directory.
 
-The `wrk` function intercepts the output from the `worktree` binary and automatically executes `cd` commands when switching between worktrees, for simple navigation.
+The `wrk` function intercepts the output from the `wrk` binary and automatically executes `cd` commands when switching between worktrees, for simple navigation.
 
 ### Worktree Organization
 

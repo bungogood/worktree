@@ -25,11 +25,11 @@ var completionCmd = &cobra.Command{
 
 		fmt.Print(genBashCompletion())
 		fmt.Println(`
-# Enable completion for worktree
+# Enable completion for wrk
 if [[ $(type -t compopt) = "builtin" ]]; then
-    complete -o default -F __start_wrk worktree
+    complete -o default -F __start_wrk wrk
 else
-    complete -o default -o nospace -F __start_wrk worktree
+    complete -o default -o nospace -F __start_wrk wrk
 fi`)
 	},
 }

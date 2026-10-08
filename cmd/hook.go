@@ -11,7 +11,7 @@ import (
 var hookCmd = &cobra.Command{
 	Use:       "hook <shell>",
 	Short:     "Generate shell hook script",
-	Long:      `Generate the shell hook script for worktree with the 'wrk' function.`,
+	Long:      `Generate the shell hook script for wrk with directory switching.`,
 	ValidArgs: []string{"bash"},
 	Args:      cobra.ExactArgs(1),
 	Run:       runHook,
@@ -25,18 +25,24 @@ func runHook(cmd *cobra.Command, args []string) {
 	}
 
 	// Output the bash hook script.
-	fmt.Printf(`# worktree shell setup
+	fmt.Printf(`# wrk shell setup
 wrk() {
-    # If we're in completion mode, call worktree directly without processing
+    # If we're in completion mode, call the binary directly without processing.
+    # 'command' bypasses this function so the binary runs instead of recursing.
     if [ -n "${COMP_LINE}" ]; then
-        worktree "$@"
+        command wrk "$@"
         return $?
     fi
 
-    local dir_path=""
-    local exit_code=0
+    # Capture output first so the binary's exit code survives: reading it
+    # through process substitution would report 'read' hitting EOF (1)
+    # instead (PIPESTATUS only covers real pipelines).
+    local output exit_code dir_path line
+    output="$(command wrk "$@" 2>&1)"
+    exit_code=$?
 
     # Stream output line by line and check for delimiter
+    dir_path=""
     while IFS= read -r line; do
         if [[ "$line" == %s* ]]; then
             # Found delimiter, extract directory path
@@ -45,10 +51,7 @@ wrk() {
             # Regular output, print immediately
             echo "$line"
         fi
-    done < <(worktree "$@" 2>&1)
-
-    # Capture the exit code from the worktree command
-    exit_code=${PIPESTATUS[0]}
+    done <<< "$output"
 
     # If we found a directory path, change to it
     if [ -n "$dir_path" ] && [ -d "$dir_path" ]; then
@@ -57,17 +60,6 @@ wrk() {
 
     return $exit_code
 }
-
-# Ensure a 'wrk' command exists next to the worktree binary for
-# non-interactive use (agents, scripts). Runs once; skips silently
-# when the directory is not writable.
-if command -v worktree >/dev/null 2>&1; then
-    _wrk_bin_dir="$(dirname "$(command -v worktree)")"
-    if [ ! -e "${_wrk_bin_dir}/wrk" ]; then
-        ln -s "${_wrk_bin_dir}/worktree" "${_wrk_bin_dir}/wrk" 2>/dev/null
-    fi
-    unset _wrk_bin_dir
-fi
 `, pkg.CD_DELIMITER, pkg.CD_DELIMITER)
 }
 

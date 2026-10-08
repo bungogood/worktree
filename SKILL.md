@@ -46,8 +46,9 @@ before deleting anything.
 ## Commands
 
 - Run `new <branch> [name]` to create a worktree with a brand-new branch.
-- Run `add <branch> [name]` to attach an existing local branch as a worktree
-  (`--remote upstream` to track one from another remote).
+- Run `add <branch> [name]` to attach an existing local or remote branch
+  (remote defaults to `origin`, so `add abc` tracks `origin/abc` when there
+  is no local `abc`; `--remote` picks another remote).
 - Both print the new path via `__WORKTREE_CD__`.
 - Run `switch [pattern]` to resolve a worktree path; no args targets main.
 - Run `switch -b [branch]` to switch branches without changing directory.

@@ -12,3 +12,11 @@ go.work
 
 # Project binary (rooted so cmd/wrk/ sources are still tracked)
 /wrk
+
+
+# Added by cargo
+
+/target
+
+# Rust port build output
+/target/

@@ -60,6 +60,82 @@ func TestIsWorktreeDirty_States(t *testing.T) {
 	check(true, "untracked-only change")
 }
 
+func TestParseGitVersion(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  string
+		major  int
+		minor  int
+		wantOK bool
+	}{
+		{name: "modern", input: "git version 2.55.0", major: 2, minor: 55, wantOK: true},
+		{name: "old", input: "git version 2.30.1", major: 2, minor: 30, wantOK: true},
+		{name: "major bump", input: "git version 3.0.0", major: 3, minor: 0, wantOK: true},
+		{name: "garbage", input: "not git", wantOK: false},
+		{name: "empty", input: "", wantOK: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			major, minor, ok := parseGitVersion(tt.input)
+			if ok != tt.wantOK {
+				t.Fatalf("parseGitVersion(%q) ok = %v, want %v", tt.input, ok, tt.wantOK)
+			}
+			if ok && (major != tt.major || minor != tt.minor) {
+				t.Fatalf("parseGitVersion(%q) = %d.%d, want %d.%d", tt.input, major, minor, tt.major, tt.minor)
+			}
+		})
+	}
+}
+
+func TestEnsureFastReads(t *testing.T) {
+	repoDir := t.TempDir()
+
+	runGit(t, repoDir, "init", "-b", "main")
+
+	r := &Repo{MainWorktree: &Worktree{Path: repoDir, Name: "repo"}}
+
+	// Unset keys get enabled.
+	tuned, err := r.EnsureFastReads()
+	if err != nil {
+		t.Fatalf("EnsureFastReads failed: %v", err)
+	}
+	if !tuned {
+		t.Fatalf("EnsureFastReads = false on unconfigured repo, want true")
+	}
+	for _, key := range []string{"core.fsmonitor", "core.untrackedCache"} {
+		cmd := exec.Command("git", "-C", repoDir, "config", "--local", key)
+		out, err := cmd.Output()
+		if err != nil || strings.TrimSpace(string(out)) != "true" {
+			t.Fatalf("%s = %q, want \"true\" (err %v)", key, strings.TrimSpace(string(out)), err)
+		}
+	}
+
+	// Second run is a no-op.
+	tuned, err = r.EnsureFastReads()
+	if err != nil {
+		t.Fatalf("EnsureFastReads failed: %v", err)
+	}
+	if tuned {
+		t.Fatalf("EnsureFastReads = true on configured repo, want false")
+	}
+
+	// Explicit false is respected.
+	runGit(t, repoDir, "config", "--local", "core.fsmonitor", "false")
+	tuned, err = r.EnsureFastReads()
+	if err != nil {
+		t.Fatalf("EnsureFastReads failed: %v", err)
+	}
+	if tuned {
+		t.Fatalf("EnsureFastReads = true with explicit opt-out, want false")
+	}
+	cmd := exec.Command("git", "-C", repoDir, "config", "--local", "core.fsmonitor")
+	out, _ := cmd.Output()
+	if strings.TrimSpace(string(out)) != "false" {
+		t.Fatalf("core.fsmonitor overwritten to %q, want \"false\"", strings.TrimSpace(string(out)))
+	}
+}
+
 func TestAheadBehind_CountsAgainstBase(t *testing.T) {
 	repoDir := t.TempDir()
 

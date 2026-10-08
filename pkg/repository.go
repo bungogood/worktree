@@ -404,6 +404,62 @@ func (r *Repo) hasUntrackedFiles(wt *Worktree) (bool, error) {
 	return n > 0, nil
 }
 
+// parseGitVersion extracts major/minor from "git version 2.55.0" style output.
+func parseGitVersion(s string) (major, minor int, ok bool) {
+	fields := strings.Fields(strings.TrimSpace(s))
+	for _, f := range fields {
+		dots := strings.SplitN(f, ".", 3)
+		if len(dots) < 2 {
+			continue
+		}
+		maj, err1 := strconv.Atoi(dots[0])
+		min, err2 := strconv.Atoi(dots[1])
+		if err1 == nil && err2 == nil {
+			return maj, min, true
+		}
+	}
+	return 0, 0, false
+}
+
+// EnsureFastReads enables git's read caches (fsmonitor event daemon plus the
+// untracked cache) when they are not configured. On million-file repos this
+// turns status-style scans from O(tree) into O(changed). It only touches the
+// repo-local config, never fails the caller, and respects an explicit false:
+// set either key to false to opt out permanently.
+func (r *Repo) EnsureFastReads() (tuned bool, err error) {
+	wt := r.MainWorktree
+
+	out, err := r.runGitRead(wt, "version")
+	if err != nil {
+		return false, err
+	}
+	major, minor, ok := parseGitVersion(string(out))
+	fsmonitorOK := ok && (major > 2 || (major == 2 && minor >= 37))
+
+	// key -> needs daemon-era git
+	for _, key := range []string{"core.fsmonitor", "core.untrackedCache"} {
+		if key == "core.fsmonitor" && !fsmonitorOK {
+			continue
+		}
+		cur, err := r.runGitRead(wt, "config", "--local", key)
+		if err == nil && len(strings.TrimSpace(string(cur))) > 0 {
+			// Already set: an explicit false (or anything else) wins.
+			continue
+		}
+		if _, err := r.RunGitCommand(wt, "config", "--local", key, "true"); err != nil {
+			return tuned, err
+		}
+		tuned = true
+	}
+
+	if tuned {
+		// Populate the untracked cache extension now (our own probes run
+		// with OPTIONAL_LOCKS and would never write it).
+		_, _ = r.RunGitCommand(wt, "update-index", "--untracked-cache")
+	}
+	return tuned, nil
+}
+
 // readOnlyEnv marks git invocations that must never take locks or refresh
 // the index (status-style reads across many worktrees).
 var readOnlyEnv = []string{"GIT_OPTIONAL_LOCKS=0"}

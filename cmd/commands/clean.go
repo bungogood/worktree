@@ -35,6 +35,12 @@ var cleanCmd = &cobra.Command{
 		}
 		cutoff := time.Now().Add(-maxAge)
 
+		// One-time per repo: enable git's read caches so the sweeps below
+		// stay fast on huge trees. Never fails the command.
+		if tuned, err := repo.EnsureFastReads(); err == nil && tuned {
+			fmt.Fprintln(os.Stderr, "Enabled git read caches (core.fsmonitor, core.untrackedCache) for faster clean; opt out: git config core.fsmonitor false")
+		}
+
 		// Clear git metadata for worktree directories deleted outside
 		// of wrk. Preview only under --dry-run.
 		missing := 0

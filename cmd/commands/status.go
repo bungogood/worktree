@@ -36,6 +36,12 @@ var statusCmd = &cobra.Command{
 			return nil
 		}
 
+		// One-time per repo: enable git's read caches so status-style
+		// sweeps stay fast on huge trees. Never fails the command.
+		if tuned, err := repo.EnsureFastReads(); err == nil && tuned {
+			fmt.Fprintln(os.Stderr, "Enabled git read caches (core.fsmonitor, core.untrackedCache) for faster status; opt out: git config core.fsmonitor false")
+		}
+
 		// Compare against the default branch; fall back to per-row
 		// unknowns when it cannot be determined.
 		if cmd.Flags().Changed("remote") {

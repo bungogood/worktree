@@ -54,6 +54,7 @@ var cleanCmd = &cobra.Command{
 		}
 
 		var stale []staleWorktree
+		var candidates []pkg.Worktree
 		for i := range repo.Worktrees {
 			wt := &repo.Worktrees[i]
 			if repo.IsMainWorktree(wt) || wt.Path == repo.CurrentWorktree.Path {
@@ -64,21 +65,25 @@ var cleanCmd = &cobra.Command{
 			if _, err := os.Stat(wt.Path); os.IsNotExist(err) {
 				continue
 			}
+			candidates = append(candidates, *wt)
+		}
 
-			last, err := repo.WorktreeLastActivity(wt)
-			if err != nil {
-				fmt.Printf("Skipped '%s': %v\n", wt.Name, err)
+		// One concurrent sweep for dates and dirty state (base "" skips
+		// ahead/behind, which clean never shows).
+		for _, p := range repo.ProbeWorktrees(candidates, "") {
+			if !p.HasDate {
+				fmt.Printf("Skipped '%s': could not determine last commit\n", p.Worktree.Name)
 				continue
 			}
-			if last.After(cutoff) {
+			if p.LastCommit.After(cutoff) {
 				continue
 			}
-
-			dirty, err := repo.IsWorktreeDirty(wt)
-			if err != nil {
-				return err
+			if p.DirtyErr != nil {
+				fmt.Printf("Skipped '%s': %v\n", p.Worktree.Name, p.DirtyErr)
+				continue
 			}
-			stale = append(stale, staleWorktree{worktree: wt, lastCommit: last, dirty: dirty})
+			wt := p.Worktree
+			stale = append(stale, staleWorktree{worktree: &wt, lastCommit: p.LastCommit, dirty: p.Dirty})
 		}
 
 		if len(stale) == 0 {

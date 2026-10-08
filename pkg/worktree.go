@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -14,6 +16,75 @@ type Worktree struct {
 	Branch       string // Branch name
 	Name         string // Worktree name
 	RemoteBranch string // Remote name if created from remote branch, empty if local
+}
+
+// WorktreeProbe holds one worktree's gathered read-only state.
+type WorktreeProbe struct {
+	Worktree   Worktree
+	LastCommit time.Time
+	HasDate    bool
+	Dirty      bool
+	DirtyErr   error
+	Ahead      int
+	Behind     int
+	Counted    bool // ahead/behind resolved against base
+}
+
+// ProbeWorktrees gathers dirty state, last-commit date and ahead/behind vs
+// base for the given worktrees concurrently (bounded). Branch dates come
+// from a single batched lookup; detached worktrees fall back to a
+// per-worktree log. An empty base skips ahead/behind. Individual failures
+// are recorded on the probe and never abort the sweep.
+func (r *Repo) ProbeWorktrees(worktrees []Worktree, base string) []WorktreeProbe {
+	probes := make([]WorktreeProbe, len(worktrees))
+
+	dates, err := r.BranchLastCommitMap()
+	if err != nil {
+		dates = nil
+	}
+
+	const maxParallel = 8
+	sem := make(chan struct{}, maxParallel)
+	var wg sync.WaitGroup
+	for i := range worktrees {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			wt := worktrees[i]
+			p := WorktreeProbe{Worktree: wt}
+
+			if dates != nil {
+				if last, ok := dates[wt.Branch]; ok {
+					p.LastCommit, p.HasDate = last, true
+				}
+			}
+			if !p.HasDate {
+				// Covers detached worktrees and a failed batch lookup.
+				if last, err := r.WorktreeLastActivity(&wt); err == nil {
+					p.LastCommit, p.HasDate = last, true
+				}
+			}
+
+			if dirty, err := r.IsWorktreeDirty(&wt); err == nil {
+				p.Dirty = dirty
+			} else {
+				p.DirtyErr = err
+			}
+
+			if base != "" {
+				if ahead, behind, err := r.AheadBehind(&wt, base); err == nil {
+					p.Ahead, p.Behind, p.Counted = ahead, behind, true
+				}
+			}
+
+			probes[i] = p
+		}(i)
+	}
+	wg.Wait()
+	return probes
 }
 
 // FindWorktreeByBranch finds a worktree by branch name

@@ -44,35 +44,50 @@ var statusCmd = &cobra.Command{
 			}
 		}
 		base, baseErr := repo.DefaultBranchFor(repo.ResolveRemote(statusRemote))
+		if baseErr != nil {
+			base = ""
+		}
 		now := time.Now()
 
-		for _, wt := range repo.SortedWorktrees() {
-			wt := wt
-			state, progress, age := "?", "?", "?"
+		// Gather state for all present worktrees in one concurrent sweep;
+		// missing directories are reported as gone without any git calls.
+		sorted := repo.SortedWorktrees()
+		var present []pkg.Worktree
+		for i := range sorted {
+			if _, err := os.Stat(sorted[i].Path); os.IsNotExist(err) {
+				continue
+			}
+			present = append(present, sorted[i])
+		}
+		probes := repo.ProbeWorktrees(present, base)
+		byPath := make(map[string]pkg.WorktreeProbe, len(probes))
+		for _, p := range probes {
+			byPath[p.Worktree.Path] = p
+		}
 
+		for _, wt := range sorted {
+			wt := wt
 			if _, err := os.Stat(wt.Path); os.IsNotExist(err) {
-				fmt.Printf("%-28s %-6s %7s %s\n", repo.GetWorktreeDisplay(&wt), "gone", "?", "?")
+				fmt.Printf("%s %-6s %7s %s\n", padVisible(repo.GetWorktreeDisplay(&wt), 28), "gone", "?", "?")
 				continue
 			}
 
-			if dirty, err := repo.IsWorktreeDirty(&wt); err == nil {
+			p := byPath[wt.Path]
+			state, progress, age := "?", "?", "?"
+			if p.DirtyErr == nil {
 				state = "clean"
-				if dirty {
+				if p.Dirty {
 					state = "dirty"
 				}
 			}
-
-			if baseErr == nil {
-				if ahead, behind, err := repo.AheadBehind(&wt, base); err == nil {
-					progress = fmt.Sprintf("+%d/-%d", ahead, behind)
-				}
+			if p.Counted {
+				progress = fmt.Sprintf("+%d/-%d", p.Ahead, p.Behind)
+			}
+			if p.HasDate {
+				age = fmt.Sprintf("%s (%s)", pkg.HumanizeAge(now.Sub(p.LastCommit)), p.LastCommit.Format("2006-01-02"))
 			}
 
-			if last, err := repo.WorktreeLastActivity(&wt); err == nil {
-				age = fmt.Sprintf("%s (%s)", pkg.HumanizeAge(now.Sub(last)), last.Format("2006-01-02"))
-			}
-
-			fmt.Printf("%-28s %-6s %7s %s\n", repo.GetWorktreeDisplay(&wt), state, progress, age)
+			fmt.Printf("%s %-6s %7s %s\n", padVisible(repo.GetWorktreeDisplay(&wt), 28), state, progress, age)
 		}
 		return nil
 	}),

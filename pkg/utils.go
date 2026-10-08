@@ -51,10 +51,21 @@ func RepoCompletion(fn func(*Repo, *cobra.Command, []string, string) ([]string, 
 }
 
 func RunCommand(name string, args ...string) ([]byte, error) {
+	return RunCommandEnv(name, nil, args...)
+}
+
+// RunCommandEnv runs a command with extra environment variables appended to
+// the current environment. Pass GIT_OPTIONAL_LOCKS=0 for read-only git
+// probes (the starship trick): git never takes locks or refreshes the index,
+// so status-style reads stay fast and never block writers.
+func RunCommandEnv(name string, extraEnv []string, args ...string) ([]byte, error) {
 	if GlobalFlags.Verbose {
 		fmt.Fprintf(os.Stderr, "Running: %s %s\n", name, strings.Join(args, " "))
 	}
 	cmd := exec.Command(name, args...)
+	if len(extraEnv) > 0 {
+		cmd.Env = append(os.Environ(), extraEnv...)
+	}
 	output, err := cmd.CombinedOutput()
 	return output, err
 }

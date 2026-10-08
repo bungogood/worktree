@@ -293,7 +293,7 @@ func (r *Repo) SwitchBranch(wt *Worktree, target string) error {
 
 // BranchLastCommit returns the time of the last commit on a local branch.
 func (r *Repo) BranchLastCommit(branch string) (time.Time, error) {
-	output, err := r.RunGitCommand(nil, "for-each-ref", "--format=%(committerdate:unix)", "refs/heads/"+branch)
+	output, err := r.runGitRead(nil, "for-each-ref", "--format=%(committerdate:unix)", "refs/heads/"+branch)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("failed to get last commit for branch '%s': %w", branch, err)
 	}
@@ -304,13 +304,38 @@ func (r *Repo) BranchLastCommit(branch string) (time.Time, error) {
 	return time.Unix(unix, 0), nil
 }
 
+// BranchLastCommitMap returns the last-commit time of every local branch in
+// a single git invocation, so status-style sweeps don't fork per worktree.
+func (r *Repo) BranchLastCommitMap() (map[string]time.Time, error) {
+	output, err := r.runGitRead(r.MainWorktree, "for-each-ref", "--format=%(refname) %(committerdate:unix)", "refs/heads/")
+	if err != nil {
+		return nil, fmt.Errorf("failed to list branch dates: %w", err)
+	}
+
+	dates := make(map[string]time.Time)
+	for _, line := range strings.Split(string(output), "\n") {
+		parts := strings.Fields(strings.TrimSpace(line))
+		if len(parts) != 2 {
+			continue
+		}
+		branch, ok := strings.CutPrefix(parts[0], "refs/heads/")
+		if !ok || branch == "" {
+			continue
+		}
+		if unix, err := strconv.ParseInt(parts[1], 10, 64); err == nil {
+			dates[branch] = time.Unix(unix, 0)
+		}
+	}
+	return dates, nil
+}
+
 // WorktreeLastActivity returns the last commit reachable from a worktree:
 // the tip of its branch, or HEAD when detached.
 func (r *Repo) WorktreeLastActivity(wt *Worktree) (time.Time, error) {
 	if wt.Branch != "" {
 		return r.BranchLastCommit(wt.Branch)
 	}
-	output, err := r.RunGitCommand(wt, "log", "-1", "--format=%ct", "HEAD")
+	output, err := r.runGitRead(wt, "log", "-1", "--format=%ct", "HEAD")
 	if err != nil {
 		return time.Time{}, fmt.Errorf("failed to get last commit for worktree '%s': %w", wt.Name, err)
 	}
@@ -323,11 +348,23 @@ func (r *Repo) WorktreeLastActivity(wt *Worktree) (time.Time, error) {
 
 // IsWorktreeDirty reports whether a worktree has uncommitted changes.
 func (r *Repo) IsWorktreeDirty(wt *Worktree) (bool, error) {
-	output, err := r.RunGitCommand(wt, "status", "--porcelain")
+	output, err := r.runGitRead(wt, "status", "--porcelain")
 	if err != nil {
 		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
 	}
 	return strings.TrimSpace(string(output)) != "", nil
+}
+
+// readOnlyEnv marks git invocations that must never take locks or refresh
+// the index (status-style reads across many worktrees).
+var readOnlyEnv = []string{"GIT_OPTIONAL_LOCKS=0"}
+
+// runGitRead runs a git command that only reads, never writes.
+func (r *Repo) runGitRead(wt *Worktree, args ...string) ([]byte, error) {
+	if wt != nil {
+		args = append([]string{"-C", wt.Path}, args...)
+	}
+	return RunCommandEnv("git", readOnlyEnv, args...)
 }
 
 // PruneWorktrees clears git metadata for worktree directories that no
@@ -351,7 +388,7 @@ func (r *Repo) PruneWorktrees() (int, error) {
 // AheadBehind counts how many commits the worktree's HEAD is ahead of and
 // behind the base branch. Uses local refs only (no fetch).
 func (r *Repo) AheadBehind(wt *Worktree, base string) (ahead, behind int, err error) {
-	output, err := r.RunGitCommand(wt, "rev-list", "--left-right", "--count", base+"...HEAD")
+	output, err := r.runGitRead(wt, "rev-list", "--left-right", "--count", base+"...HEAD")
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to compare with '%s': %w", base, err)
 	}

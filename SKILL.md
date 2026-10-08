@@ -27,6 +27,16 @@ When the human says `wrk`, run the `worktree` binary. Never run bare `wrk`:
 You don't need the `cd` magic: parse the `__WORKTREE_CD__<path>` line and
 `cd` (or set the working directory) yourself.
 
+## Stay on the tool
+
+For anything worktree-related, use `worktree` subcommands only — do not
+duplicate the job with raw `git worktree ...` calls. They bypass the tool's
+conventions and safety rails (naming, markers, dirty/main guards), and the
+double output just buries the answer. Plain `git` stays fine for normal
+version-control work (diff, log, commit); only reach for `git worktree`
+when `worktree` itself errors unexpectedly and you need to diagnose — and
+say that's what you're doing.
+
 ## Layout
 
 - The main checkout holds `.git/`; linked worktrees live in

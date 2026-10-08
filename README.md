@@ -1,4 +1,4 @@
-# worktree
+# wrk
 
 [![Build](../../actions/workflows/build.yml/badge.svg)](../../actions/workflows/build.yml)
 
@@ -13,6 +13,9 @@ Work on multiple features in separate directories and switch between them instan
 - Create and jump to new or existing branch worktrees in one command
 - Shell-native directory switching with `wrk` (like `z` for `zoxide`)
 - Glob-aware worktree selection with tab completion (`wrk switch feature/*`)
+- In-place branch switching without changing directory (`wrk switch -b`)
+- Status overview with dirty state and ahead/behind per worktree (`wrk status`)
+- Cleanup of stale worktrees by last-commit age (`wrk clean`)
 - Built-in skip/exclude/copy workflows to reduce repeated setup across worktrees
 
 ## Installation
@@ -43,8 +46,9 @@ wrk new feature/my-change
 wrk switch
 wrk switch feature/*
 
-# List and remove
+# List, check status, and remove
 wrk list
+wrk status
 wrk rm feature/my-change
 ```
 
@@ -67,11 +71,22 @@ wrk switch  # Switch to main worktree
 wrk switch feature-branch
 wrk switch JIRA-123-*  # Glob pattern matching
 
+# Switch branch in place (no directory change)
+wrk switch -b  # Main worktree: remote default branch, linked: branch matching directory name
+wrk switch -b feature-branch
+
+# Status overview (dirty state, ahead/behind, last-commit age)
+wrk status
+
 # Remove worktrees
 wrk rm  # Removes current worktree and switches to main worktree
 wrk rm feature-branch
 wrk rm branch-1 branch-2 branch-3
 wrk rm -D feature-branch  # Deletes branch
+
+# Clean up stale worktrees (no commits for longer than the threshold)
+wrk clean --dry-run  # Preview (also try -o 4w, -f for dirty worktrees)
+wrk clean
 
 # Skip file changes across all worktrees
 wrk skip  # List skipped files

@@ -10,5 +10,5 @@
 # Go workspace file
 go.work
 
-# Project binary
-wrk
+# Project binary (rooted so cmd/wrk/ sources are still tracked)
+/wrk

@@ -1,6 +1,6 @@
 //! Git access layer (gitoxide). Mirrors pkg/repository.go + pkg/worktree.go.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
@@ -99,74 +99,6 @@ impl Repo {
         sorted
     }
 
-    /// Preferred remote: explicit flag wins, else `origin` when configured,
-    /// else first alphabetically, else empty.
-    pub fn resolve_remote(&self, explicit: Option<&str>) -> String {
-        if let Some(r) = explicit {
-            if !r.is_empty() {
-                return r.to_string();
-            }
-        }
-        let mut remotes = self.remote_names();
-        remotes.sort();
-        if remotes.iter().any(|r| r == "origin") {
-            return "origin".to_string();
-        }
-        remotes.into_iter().next().unwrap_or_default()
-    }
-
-    fn remote_names(&self) -> Vec<String> {
-        let Ok(repo) = gix::open(&self.main_path) else {
-            return Vec::new();
-        };
-        let Ok(refs) = repo.references() else {
-            return Vec::new();
-        };
-        let Ok(iter) = refs.prefixed(b"refs/remotes/") else {
-            return Vec::new();
-        };
-        let mut names = HashSet::new();
-        for r in iter.filter_map(Result::ok) {
-            let full = r.name().as_bstr().to_string();
-            if let Some(rest) = full.strip_prefix("refs/remotes/") {
-                if let Some((remote, _)) = rest.split_once('/') {
-                    names.insert(remote.to_string());
-                }
-            }
-        }
-        names.into_iter().collect()
-    }
-
-    /// Default branch for a remote, read offline from its HEAD symref with a
-    /// local main/master fallback — like DefaultBranchFor.
-    pub fn default_branch_for(&self, remote: String) -> Result<String, String> {
-        if !remote.is_empty() {
-            let repo =
-                gix::open(&self.main_path).map_err(|e| format!("cannot open repo: {e}"))?;
-            // Read the symref target directly for the short branch name.
-            let head_name = format!("refs/remotes/{remote}/HEAD");
-            if let Ok(head) = repo.find_reference(&head_name) {
-                if let gix_ref::TargetRef::Symbolic(sym) = head.target() {
-                    let full = sym.as_bstr().to_string();
-                    let prefix = format!("refs/remotes/{remote}/");
-                    if let Some(branch) = full.strip_prefix(&prefix) {
-                        if !branch.is_empty() {
-                            return Ok(branch.to_string());
-                        }
-                    }
-                }
-            }
-        }
-        for fallback in ["refs/heads/main", "refs/heads/master"] {
-            let repo =
-                gix::open(&self.main_path).map_err(|e| format!("cannot open repo: {e}"))?;
-            if repo.find_reference(fallback).is_ok() {
-                return Ok(fallback.rsplit('/').next().unwrap_or(fallback).to_string());
-            }
-        }
-        Err("could not determine default branch".to_string())
-    }
-
     /// Last-commit times for every local branch in one pass.
     pub fn branch_dates(&self) -> HashMap<String, SystemTime> {
         let mut dates = HashMap::new();
@@ -206,40 +138,6 @@ pub fn is_dirty(path: &Path) -> Result<bool, String> {
         .into_iter(None)
         .map_err(|e| format!("status failed: {e}"))?;
     Ok(matches!(iter.next(), Some(Ok(_))))
-}
-
-/// Commits ahead/behind `base` for the worktree at `path`.
-pub fn ahead_behind(path: &Path, base: &str) -> Result<(usize, usize), String> {
-    let repo = gix::open(path).map_err(|e| format!("cannot open repo: {e}"))?;
-    let head = repo.head_id().map_err(|e| format!("no HEAD: {e}"))?;
-    let base_id = repo
-        .rev_parse_single(base)
-        .map_err(|e| format!("unknown base '{base}': {e}"))?;
-    let ahead = count_reachable(&repo, head.detach(), base_id.detach());
-    let behind = count_reachable(&repo, base_id.detach(), head.detach());
-    Ok((ahead, behind))
-}
-
-fn count_reachable(
-    repo: &gix::Repository,
-    from: gix::ObjectId,
-    exclude: gix::ObjectId,
-) -> usize {
-    let mut excl = HashSet::new();
-    if let Ok(walk) = repo.rev_walk([exclude]).all() {
-        for info in walk.filter_map(Result::ok) {
-            excl.insert(info.id);
-        }
-    }
-    let mut n = 0usize;
-    if let Ok(walk) = repo.rev_walk([from]).all() {
-        for info in walk.filter_map(Result::ok) {
-            if !excl.contains(&info.id) {
-                n += 1;
-            }
-        }
-    }
-    n
 }
 
 /// Last activity: branch tip from the batch map, else per-worktree HEAD.

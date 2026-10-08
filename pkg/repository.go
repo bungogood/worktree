@@ -144,31 +144,42 @@ func (r *Repo) AllBranches(remote string) ([]string, error) {
 	// An empty remote lists local branches only.
 	refs := []string{"refs/heads"}
 	if remote != "" {
-		refs = append(refs, fmt.Sprintf("refs/remotes/%s", remote))
+		// Trailing slash keeps prefix remotes (origin vs origin2) apart.
+		refs = append(refs, fmt.Sprintf("refs/remotes/%s/", remote))
 	}
-	output, err := r.RunGitCommand(nil, append([]string{"for-each-ref", "--format=%(refname:short)"}, refs...)...)
+	output, err := r.RunGitCommand(nil, append([]string{"for-each-ref", "--format=%(refname)"}, refs...)...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list branches: %w", err)
 	}
 
+	// Parse full refnames (short names are ambiguous: the "<remote>/HEAD"
+	// symref shortens to a bare "<remote>", which is not a branch).
 	lines := strings.Split(string(output), "\n")
 	branches := make([]string, 0, len(lines))
 	seen := make(map[string]bool, len(lines))
-	remotePrefix := remote + "/"
+	remoteHEAD := "refs/remotes/" + remote + "/HEAD"
+	remotePrefix := "refs/remotes/" + remote + "/"
 
 	for _, line := range lines {
-		branch := strings.TrimSpace(line)
-		if branch != "" {
-			// Strip remote prefix from branch names (e.g., "origin/feature" -> "feature")
-			if after, ok := strings.CutPrefix(branch, remotePrefix); ok {
-				branch = after
-			}
-			if seen[branch] {
-				continue
-			}
-			seen[branch] = true
-			branches = append(branches, branch)
+		full := strings.TrimSpace(line)
+		if full == "" {
+			continue
 		}
+		var branch string
+		if after, ok := strings.CutPrefix(full, "refs/heads/"); ok {
+			branch = after
+		} else if remote == "" || full == remoteHEAD {
+			continue
+		} else if after, ok := strings.CutPrefix(full, remotePrefix); ok {
+			branch = after
+		} else {
+			continue
+		}
+		if seen[branch] {
+			continue
+		}
+		seen[branch] = true
+		branches = append(branches, branch)
 	}
 
 	return branches, nil
@@ -205,11 +216,41 @@ func (r *Repo) DefaultRemote() string {
 	return remotes[0]
 }
 
+// ResolveRemote picks the remote to use: an explicit --remote flag value wins,
+// otherwise the default remote. Returns "" when no remotes are configured.
+func (r *Repo) ResolveRemote(explicit string) string {
+	if explicit != "" {
+		return explicit
+	}
+	return r.DefaultRemote()
+}
+
+// RequireRemote errors when the named remote is not configured.
+func (r *Repo) RequireRemote(remote string) error {
+	remotes, err := r.Remotes()
+	if err != nil {
+		return err
+	}
+	if !slices.Contains(remotes, remote) {
+		if len(remotes) == 0 {
+			return fmt.Errorf("unknown remote '%s': no remotes are configured", remote)
+		}
+		return fmt.Errorf("unknown remote '%s' (available: %s)", remote, strings.Join(remotes, ", "))
+	}
+	return nil
+}
+
 // DefaultBranch resolves the default remote's default branch offline (no fetch/pull).
 // It reads the local refs/remotes/<remote>/HEAD symbolic ref and returns the
 // short branch name (e.g. "main", not "origin/main").
 func (r *Repo) DefaultBranch() (string, error) {
-	if remote := r.DefaultRemote(); remote != "" {
+	return r.DefaultBranchFor(r.DefaultRemote())
+}
+
+// DefaultBranchFor resolves the given remote's default branch offline. An
+// empty remote skips straight to the local main/master fallback.
+func (r *Repo) DefaultBranchFor(remote string) (string, error) {
+	if remote != "" {
 		headRef := fmt.Sprintf("refs/remotes/%s/HEAD", remote)
 		output, err := r.RunGitCommand(r.MainWorktree, "symbolic-ref", headRef)
 		if err == nil {
@@ -221,10 +262,11 @@ func (r *Repo) DefaultBranch() (string, error) {
 	}
 
 	// Fallback when the remote HEAD is not set locally: prefer main, then master.
-	if r.BranchExists("main") {
+	// Qualified to local branches so a stale remote-only ref cannot win.
+	if r.BranchExists("refs/heads/main") {
 		return "main", nil
 	}
-	if r.BranchExists("master") {
+	if r.BranchExists("refs/heads/master") {
 		return "master", nil
 	}
 
@@ -286,6 +328,44 @@ func (r *Repo) IsWorktreeDirty(wt *Worktree) (bool, error) {
 		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
 	}
 	return strings.TrimSpace(string(output)) != "", nil
+}
+
+// PruneWorktrees clears git metadata for worktree directories that no
+// longer exist on disk. Returns how many entries were pruned.
+func (r *Repo) PruneWorktrees() (int, error) {
+	missing := 0
+	for i := range r.Worktrees {
+		if _, err := os.Stat(r.Worktrees[i].Path); os.IsNotExist(err) {
+			missing++
+		}
+	}
+	if missing == 0 {
+		return 0, nil
+	}
+	if _, err := r.RunGitCommand(r.MainWorktree, "worktree", "prune"); err != nil {
+		return 0, fmt.Errorf("failed to prune worktrees: %w", err)
+	}
+	return missing, nil
+}
+
+// AheadBehind counts how many commits the worktree's HEAD is ahead of and
+// behind the base branch. Uses local refs only (no fetch).
+func (r *Repo) AheadBehind(wt *Worktree, base string) (ahead, behind int, err error) {
+	output, err := r.RunGitCommand(wt, "rev-list", "--left-right", "--count", base+"...HEAD")
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to compare with '%s': %w", base, err)
+	}
+	parts := strings.Fields(strings.TrimSpace(string(output)))
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("unexpected rev-list output %q", strings.TrimSpace(string(output)))
+	}
+	if behind, err = strconv.Atoi(parts[0]); err != nil {
+		return 0, 0, fmt.Errorf("unexpected rev-list output %q: %w", parts[0], err)
+	}
+	if ahead, err = strconv.Atoi(parts[1]); err != nil {
+		return 0, 0, fmt.Errorf("unexpected rev-list output %q: %w", parts[1], err)
+	}
+	return ahead, behind, nil
 }
 
 // GetWorktreePath returns the path where a worktree for the given branch should be

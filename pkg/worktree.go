@@ -113,19 +113,22 @@ func (r *Repo) AddExistingBranch(branch, name, remote string) (*Worktree, error)
 	// Get the path for the new worktree using the custom name
 	worktreePath := r.GetWorktreePath(name)
 
-	// Check if branch exists locally or on remote
+	// Check if branch exists locally or on remote (empty remote means no
+	// remotes are configured, so only local branches qualify).
 	var err error
-	remoteBranch := fmt.Sprintf("%s/%s", remote, branch)
 	remoteTracking := ""
 	if r.BranchExists(branch) {
 		// Branch exists locally
 		_, err = r.RunGitCommand(nil, "worktree", "add", worktreePath, branch)
-	} else if r.BranchExists(remoteBranch) {
+	} else if remote != "" && r.BranchExists(fmt.Sprintf("%s/%s", remote, branch)) {
 		// Branch exists on remote, create worktree with tracking
+		remoteBranch := fmt.Sprintf("%s/%s", remote, branch)
 		_, err = r.RunGitCommand(nil, "worktree", "add", "-b", branch, worktreePath, remoteBranch)
 		remoteTracking = remoteBranch
-	} else {
+	} else if remote != "" {
 		return nil, fmt.Errorf("branch '%s' does not exist locally or on remote '%s'", branch, remote)
+	} else {
+		return nil, fmt.Errorf("branch '%s' does not exist locally (no remotes are configured)", branch)
 	}
 
 	if err != nil {

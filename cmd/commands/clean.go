@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -34,10 +35,33 @@ var cleanCmd = &cobra.Command{
 		}
 		cutoff := time.Now().Add(-maxAge)
 
+		// Clear git metadata for worktree directories deleted outside
+		// of wrk. Preview only under --dry-run.
+		missing := 0
+		for i := range repo.Worktrees {
+			if _, err := os.Stat(repo.Worktrees[i].Path); os.IsNotExist(err) {
+				missing++
+			}
+		}
+		if missing > 0 {
+			if cleanDryRun {
+				fmt.Printf("Would prune %d stale worktree entr%s\n", missing, plural(missing, "y", "ies"))
+			} else if pruned, err := repo.PruneWorktrees(); err != nil {
+				return err
+			} else if pruned > 0 {
+				fmt.Printf("Pruned %d stale worktree entr%s\n", pruned, plural(pruned, "y", "ies"))
+			}
+		}
+
 		var stale []staleWorktree
 		for i := range repo.Worktrees {
 			wt := &repo.Worktrees[i]
 			if repo.IsMainWorktree(wt) || wt.Path == repo.CurrentWorktree.Path {
+				continue
+			}
+			// Skip entries with no directory (pruned above, or
+			// previewed under --dry-run) — nothing to remove.
+			if _, err := os.Stat(wt.Path); os.IsNotExist(err) {
 				continue
 			}
 
@@ -126,6 +150,15 @@ var cleanCmd = &cobra.Command{
 
 		return nil
 	}),
+}
+
+// plural picks a singular/plural word ending for n (e.g. "1 entry",
+// "2 entries" via plural(n, "y", "ies")).
+func plural(n int, singular, many string) string {
+	if n == 1 {
+		return singular
+	}
+	return many
 }
 
 // NewCleanCmd returns the clean command

@@ -7,7 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var switchBranch bool
+var (
+	switchBranch bool
+	switchRemote string
+)
 
 var switchCmd = &cobra.Command{
 	Use:   "switch [branch]",
@@ -25,7 +28,8 @@ var switchCmd = &cobra.Command{
 
 		// Remove current worktree from completions
 		if branch, _ := cmd.Flags().GetBool("branch"); branch {
-			branches, err := repo.AllBranches(repo.DefaultRemote())
+			remote, _ := cmd.Flags().GetString("remote")
+			branches, err := repo.AllBranches(repo.ResolveRemote(remote))
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
@@ -42,13 +46,20 @@ var switchCmd = &cobra.Command{
 		// git-switch the branch. No ChangeDirectory, so the wrk
 		// wrapper does not cd.
 		if switchBranch {
+			if cmd.Flags().Changed("remote") {
+				if err := repo.RequireRemote(switchRemote); err != nil {
+					return err
+				}
+			}
+			remote := repo.ResolveRemote(switchRemote)
+
 			var target string
 			if len(args) > 0 {
 				target = args[0]
 			} else if repo.IsMainWorktree(repo.CurrentWorktree) {
 				// In the main worktree, switch to the remote's
-				// default branch (origin/HEAD, resolved offline).
-				def, err := repo.DefaultBranch()
+				// default branch (resolved offline from remote HEAD).
+				def, err := repo.DefaultBranchFor(remote)
 				if err != nil {
 					return err
 				}
@@ -99,5 +110,6 @@ var switchCmd = &cobra.Command{
 // NewSwitchCmd returns the switch command
 func NewSwitchCmd() *cobra.Command {
 	switchCmd.Flags().BoolVarP(&switchBranch, "branch", "b", false, "Switch branch in place without changing directory (defaults: main worktree switches to remote default branch, linked worktree switches to branch matching directory name)")
+	switchCmd.Flags().StringVarP(&switchRemote, "remote", "R", "", "Remote to resolve the default branch from (default: origin when configured, else first remote)")
 	return switchCmd
 }

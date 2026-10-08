@@ -25,7 +25,7 @@ var addCmd = &cobra.Command{
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 
-		branches, err := repo.AllBranches(addRemote)
+		branches, err := repo.AllBranches(repo.ResolveRemote(addRemote))
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
@@ -41,6 +41,13 @@ var addCmd = &cobra.Command{
 		return pkg.GlobFilterComplete(args, filtered, toComplete), cobra.ShellCompDirectiveNoFileComp
 	}),
 	RunE: pkg.RepoCommand(func(repo *pkg.Repo, cmd *cobra.Command, args []string) error {
+		if cmd.Flags().Changed("remote") {
+			if err := repo.RequireRemote(addRemote); err != nil {
+				return err
+			}
+		}
+		remote := repo.ResolveRemote(addRemote)
+
 		branch := args[0]
 		name := branch
 		if len(args) > 1 {
@@ -48,7 +55,7 @@ var addCmd = &cobra.Command{
 		}
 
 		// Try to add the existing branch
-		worktree, err := repo.AddExistingBranch(branch, name, addRemote)
+		worktree, err := repo.AddExistingBranch(branch, name, remote)
 		if err != nil {
 			return err
 		}
@@ -65,6 +72,6 @@ var addCmd = &cobra.Command{
 
 // NewAddCmd returns the add command
 func NewAddCmd() *cobra.Command {
-	addCmd.Flags().StringVar(&addRemote, "remote", "origin", "Remote to use for fetching branches")
+	addCmd.Flags().StringVarP(&addRemote, "remote", "R", "", "Remote to resolve branches from (default: origin when configured, else first remote)")
 	return addCmd
 }

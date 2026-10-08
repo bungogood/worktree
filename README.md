@@ -23,6 +23,14 @@ eval "$(worktree hook bash)"
 eval "$(worktree completion bash)"
 ```
 
+Sourcing the hook also installs a `wrk` command next to the `worktree`
+binary (same directory symlink) for non-interactive use by agents and
+scripts. Without the hook, create it manually:
+
+```bash
+ln -s "$(command -v worktree)" "$(dirname "$(command -v worktree)")/wrk"
+```
+
 If `worktree` is not found, add Go's bin directory to your `PATH`:
 
 ```bash

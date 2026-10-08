@@ -14,13 +14,10 @@ metadata:
 
 ## The `wrk` rule
 
-The human says `wrk`, you run `worktree`. Never run bare `wrk`, because it is
-an interactive-only shell function for `cd`, and on machines with homebrew's
-`wrk` benchmarker it resolves to that tool instead. If you want the short
-form, define it yourself once per session — `wrk() { worktree "$@"; }` — and
-never install it system-wide, since that would hijack the benchmarker in
-other contexts. Parse the `__WORKTREE_CD__<path>` line from the binary's
-output and `cd` yourself.
+The human says `wrk`, you run `wrk` — it is installed next to the `worktree`
+binary (the shell hook puts it there on setup). If the shell doesn't know it,
+run `worktree` instead; they are the same program. Parse the
+`__WORKTREE_CD__<path>` line from the output and `cd` yourself.
 
 ## Stay on the tool
 

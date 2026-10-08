@@ -57,6 +57,17 @@ wrk() {
 
     return $exit_code
 }
+
+# Ensure a 'wrk' command exists next to the worktree binary for
+# non-interactive use (agents, scripts). Runs once; skips silently
+# when the directory is not writable.
+if command -v worktree >/dev/null 2>&1; then
+    _wrk_bin_dir="$(dirname "$(command -v worktree)")"
+    if [ ! -e "${_wrk_bin_dir}/wrk" ]; then
+        ln -s "${_wrk_bin_dir}/worktree" "${_wrk_bin_dir}/wrk" 2>/dev/null
+    fi
+    unset _wrk_bin_dir
+fi
 `, pkg.CD_DELIMITER, pkg.CD_DELIMITER)
 }
 

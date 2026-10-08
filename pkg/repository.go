@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // Repo represents a git repository with its worktrees
@@ -245,6 +247,45 @@ func (r *Repo) SwitchBranch(wt *Worktree, target string) error {
 		return fmt.Errorf("failed to switch to branch '%s': %s: %w", target, strings.TrimSpace(string(output)), err)
 	}
 	return nil
+}
+
+// BranchLastCommit returns the time of the last commit on a local branch.
+func (r *Repo) BranchLastCommit(branch string) (time.Time, error) {
+	output, err := r.RunGitCommand(nil, "for-each-ref", "--format=%(committerdate:unix)", "refs/heads/"+branch)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to get last commit for branch '%s': %w", branch, err)
+	}
+	unix, err := strconv.ParseInt(strings.TrimSpace(string(output)), 10, 64)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse last commit for branch '%s': %w", branch, err)
+	}
+	return time.Unix(unix, 0), nil
+}
+
+// WorktreeLastActivity returns the last commit reachable from a worktree:
+// the tip of its branch, or HEAD when detached.
+func (r *Repo) WorktreeLastActivity(wt *Worktree) (time.Time, error) {
+	if wt.Branch != "" {
+		return r.BranchLastCommit(wt.Branch)
+	}
+	output, err := r.RunGitCommand(wt, "log", "-1", "--format=%ct", "HEAD")
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to get last commit for worktree '%s': %w", wt.Name, err)
+	}
+	unix, err := strconv.ParseInt(strings.TrimSpace(string(output)), 10, 64)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse last commit for worktree '%s': %w", wt.Name, err)
+	}
+	return time.Unix(unix, 0), nil
+}
+
+// IsWorktreeDirty reports whether a worktree has uncommitted changes.
+func (r *Repo) IsWorktreeDirty(wt *Worktree) (bool, error) {
+	output, err := r.RunGitCommand(wt, "status", "--porcelain")
+	if err != nil {
+		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
+	}
+	return strings.TrimSpace(string(output)) != "", nil
 }
 
 // GetWorktreePath returns the path where a worktree for the given branch should be

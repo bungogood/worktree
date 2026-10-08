@@ -7,7 +7,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -110,6 +112,58 @@ func copyFileWithMode(src, dst string, mode os.FileMode) error {
 
 	_, err = io.Copy(out, in)
 	return err
+}
+
+// ParseMaxAge parses an age threshold like "36h", "14d" or "4w".
+// A bare number means days. Returns an error for empty, non-positive
+// or malformed values.
+func ParseMaxAge(s string) (time.Duration, error) {
+	s = strings.TrimSpace(strings.ToLower(s))
+	if s == "" {
+		return 0, fmt.Errorf("invalid age %q: expected like 36h, 14d or 4w", s)
+	}
+
+	multipliers := map[byte]time.Duration{
+		'h': time.Hour,
+		'd': 24 * time.Hour,
+		'w': 7 * 24 * time.Hour,
+	}
+
+	multiplier := 24 * time.Hour
+	number := s
+	if last := s[len(s)-1]; last < '0' || last > '9' {
+		m, ok := multipliers[last]
+		if !ok {
+			return 0, fmt.Errorf("invalid age %q: unknown unit %q, expected h, d or w", s, string(last))
+		}
+		multiplier = m
+		number = s[:len(s)-1]
+	}
+
+	n, err := strconv.Atoi(number)
+	if err != nil || n <= 0 {
+		return 0, fmt.Errorf("invalid age %q: expected like 36h, 14d or 4w", s)
+	}
+
+	return time.Duration(n) * multiplier, nil
+}
+
+// HumanizeAge renders a duration compactly ("45m", "3h", "5d", "2w3d").
+func HumanizeAge(d time.Duration) string {
+	days := int(d.Hours()) / 24
+	if days >= 7 {
+		if rest := days % 7; rest > 0 {
+			return fmt.Sprintf("%dw%dd", days/7, rest)
+		}
+		return fmt.Sprintf("%dw", days/7)
+	}
+	if days >= 1 {
+		return fmt.Sprintf("%dd", days)
+	}
+	if d >= time.Hour {
+		return fmt.Sprintf("%dh", int(d.Hours()))
+	}
+	return fmt.Sprintf("%dm", int(d.Minutes()))
 }
 
 func GlobFilter(pattern string, candidates []string) []string {

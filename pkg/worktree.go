@@ -40,7 +40,11 @@ func (r *Repo) WorktreeAliases() []string {
 	var aliases []string
 	for _, wt := range r.Worktrees {
 		aliases = append(aliases, wt.Name)
-		aliases = append(aliases, wt.Branch)
+		// Skip empty (detached) and duplicate branch aliases so each
+		// worktree completes exactly once per distinct name.
+		if wt.Branch != "" && wt.Branch != wt.Name {
+			aliases = append(aliases, wt.Branch)
+		}
 	}
 	return aliases
 }

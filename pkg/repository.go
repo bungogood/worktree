@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
+	"sort"
 	"strings"
 )
 
@@ -137,7 +139,12 @@ func (r *Repo) loadWorktrees() error {
 
 func (r *Repo) AllBranches(remote string) ([]string, error) {
 	// List local branches and branches from the selected remote.
-	output, err := r.RunGitCommand(nil, "for-each-ref", "--format=%(refname:short)", "refs/heads", fmt.Sprintf("refs/remotes/%s", remote))
+	// An empty remote lists local branches only.
+	refs := []string{"refs/heads"}
+	if remote != "" {
+		refs = append(refs, fmt.Sprintf("refs/remotes/%s", remote))
+	}
+	output, err := r.RunGitCommand(nil, append([]string{"for-each-ref", "--format=%(refname:short)"}, refs...)...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list branches: %w", err)
 	}
@@ -163,6 +170,81 @@ func (r *Repo) AllBranches(remote string) ([]string, error) {
 	}
 
 	return branches, nil
+}
+
+// Remotes lists the configured git remotes.
+func (r *Repo) Remotes() ([]string, error) {
+	output, err := r.RunGitCommand(r.MainWorktree, "remote")
+	if err != nil {
+		return nil, fmt.Errorf("failed to list remotes: %w", err)
+	}
+
+	var remotes []string
+	for _, line := range strings.Split(string(output), "\n") {
+		if remote := strings.TrimSpace(line); remote != "" {
+			remotes = append(remotes, remote)
+		}
+	}
+	sort.Strings(remotes)
+
+	return remotes, nil
+}
+
+// DefaultRemote returns the preferred remote: "origin" when configured,
+// otherwise the first remote alphabetically, or "" when there are none.
+func (r *Repo) DefaultRemote() string {
+	remotes, err := r.Remotes()
+	if err != nil || len(remotes) == 0 {
+		return ""
+	}
+	if slices.Contains(remotes, "origin") {
+		return "origin"
+	}
+	return remotes[0]
+}
+
+// DefaultBranch resolves the default remote's default branch offline (no fetch/pull).
+// It reads the local refs/remotes/<remote>/HEAD symbolic ref and returns the
+// short branch name (e.g. "main", not "origin/main").
+func (r *Repo) DefaultBranch() (string, error) {
+	if remote := r.DefaultRemote(); remote != "" {
+		headRef := fmt.Sprintf("refs/remotes/%s/HEAD", remote)
+		output, err := r.RunGitCommand(r.MainWorktree, "symbolic-ref", headRef)
+		if err == nil {
+			ref := strings.TrimSpace(string(output))
+			if branch, ok := strings.CutPrefix(ref, fmt.Sprintf("refs/remotes/%s/", remote)); ok && branch != "" {
+				return branch, nil
+			}
+		}
+	}
+
+	// Fallback when the remote HEAD is not set locally: prefer main, then master.
+	if r.BranchExists("main") {
+		return "main", nil
+	}
+	if r.BranchExists("master") {
+		return "master", nil
+	}
+
+	return "", fmt.Errorf("could not determine default branch: no remote HEAD is set and neither 'main' nor 'master' exists locally")
+}
+
+// CurrentBranch returns the current branch name, or "" when detached.
+func (r *Repo) CurrentBranch(wt *Worktree) (string, error) {
+	output, err := r.RunGitCommand(wt, "branch", "--show-current")
+	if err != nil {
+		return "", fmt.Errorf("failed to get current branch: %w", err)
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
+// SwitchBranch switches the worktree to the target branch.
+func (r *Repo) SwitchBranch(wt *Worktree, target string) error {
+	output, err := r.RunGitCommand(wt, "switch", target)
+	if err != nil {
+		return fmt.Errorf("failed to switch to branch '%s': %s: %w", target, strings.TrimSpace(string(output)), err)
+	}
+	return nil
 }
 
 // GetWorktreePath returns the path where a worktree for the given branch should be

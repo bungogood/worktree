@@ -14,7 +14,7 @@ Work on multiple features in separate directories and switch between them instan
 - Shell-native directory switching with `wrk` (like `z` for `zoxide`)
 - Glob-aware worktree selection with tab completion (`wrk switch feature/*`)
 - In-place branch switching without changing directory (`wrk switch -b`)
-- Status overview with dirty state and ahead/behind per worktree (`wrk status`)
+- Status overview with dirty state and last-commit age (`wrk status`)
 - Cleanup of stale worktrees by last-commit age (`wrk clean`)
 - Built-in skip/exclude/copy workflows to reduce repeated setup across worktrees
 
@@ -75,7 +75,7 @@ wrk switch JIRA-123-*  # Glob pattern matching
 wrk switch -b  # Main worktree: remote default branch, linked: branch matching directory name
 wrk switch -b feature-branch
 
-# Status overview (dirty state, ahead/behind, last-commit age)
+# Status overview (dirty state, last-commit age in d/w)
 wrk status
 
 # Remove worktrees

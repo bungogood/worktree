@@ -40,8 +40,8 @@ through the tool.
 Run `wrk switch <name>` — it resolves exact names, branch names, and globs.
 Exit 0 plus a `wrk:cd:<path>` line means it exists (and gives you the
 directory); non-zero means missing or ambiguous. Run `wrk list` to enumerate
-(`>` is main, `*` is current); run `wrk status` for dirty state, ahead/behind
-vs the default branch, and last-commit age, and check it before deleting
+(`>` is main, `*` is current); run `wrk status` for dirty
+state and last-commit age, and check it before deleting
 anything.
 
 ## Commands

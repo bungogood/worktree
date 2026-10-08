@@ -124,15 +124,16 @@ var cleanCmd = &cobra.Command{
 		now := time.Now()
 		fmt.Printf("Stale worktrees (older than %s):\n", cleanOlder)
 		for _, s := range stale {
-			marker := ""
+			state := "clean"
 			if s.dirty {
-				marker = " (uncommitted changes)"
+				state = "dirty"
 			}
-			fmt.Printf("  %s  last commit %s (%s ago)%s\n",
-				strings.TrimSpace(repo.GetWorktreeDisplay(s.worktree)),
-				s.lastCommit.Format("2006-01-02"),
+			fmt.Println(pkg.StatusRow(
 				pkg.HumanizeAge(now.Sub(s.lastCommit)),
-				marker)
+				state,
+				repo.MarkerGlyph(s.worktree),
+				pkg.WorktreeLabel(s.worktree),
+			))
 		}
 
 		// Partition into removable and skipped (dirty without --force)

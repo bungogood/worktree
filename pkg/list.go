@@ -27,15 +27,38 @@ func (r *Repo) GetWorktreeMarker(wt *Worktree) WorktreeMarker {
 	return MarkerNone
 }
 
+// MarkerGlyph returns the two-character marker prefix for a worktree.
+func (r *Repo) MarkerGlyph(wt *Worktree) string {
+	switch r.GetWorktreeMarker(wt) {
+	case MarkerMain:
+		return "> "
+	case MarkerCurrent:
+		return "* "
+	default:
+		return "  "
+	}
+}
+
+// WorktreeLabel returns the bare "name [branch]" label without markers.
+func WorktreeLabel(wt *Worktree) string {
+	if wt.Branch != "" && wt.Branch != wt.Name {
+		return fmt.Sprintf("%s [%s]", wt.Name, wt.Branch)
+	}
+	return wt.Name
+}
+
+// StatusRow formats a status/clean row in the canonical order:
+// age, state, marker, label.
+func StatusRow(age, state, marker, label string) string {
+	return fmt.Sprintf("%-7s %-6s %s%s", age, state, marker, label)
+}
+
 // GetWorktreeDisplay returns the formatted display string for a worktree
 func (r *Repo) GetWorktreeDisplay(wt *Worktree) string {
 	marker := r.GetWorktreeMarker(wt)
 
 	// Build the display name
-	display := wt.Name
-	if wt.Branch != wt.Name {
-		display = fmt.Sprintf("%s [%s]", wt.Name, wt.Branch)
-	}
+	display := WorktreeLabel(wt)
 
 	// Add marker and color
 	var prefix string

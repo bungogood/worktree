@@ -68,9 +68,30 @@ var cleanCmd = &cobra.Command{
 			candidates = append(candidates, *wt)
 		}
 
+		// Prefilter by date first (one batched lookup): only stale
+		// worktrees ever need the expensive dirty scan below.
+		dates, datesErr := repo.BranchLastCommitMap()
+		var check []pkg.Worktree
+		for _, wt := range candidates {
+			last, ok := time.Time{}, false
+			if datesErr == nil {
+				last, ok = dates[wt.Branch]
+			}
+			if !ok {
+				// Unknown date (detached worktree or failed batch
+				// lookup): keep it for the full probe to decide.
+				check = append(check, wt)
+				continue
+			}
+			if last.After(cutoff) {
+				continue
+			}
+			check = append(check, wt)
+		}
+
 		// One concurrent sweep for dates and dirty state (base "" skips
-		// ahead/behind, which clean never shows).
-		for _, p := range repo.ProbeWorktrees(candidates, "") {
+		// ahead/behind, which clean never shows), reusing the batch map.
+		for _, p := range repo.ProbeWorktrees(check, "", dates) {
 			if !p.HasDate {
 				fmt.Printf("Skipped '%s': could not determine last commit\n", p.Worktree.Name)
 				continue

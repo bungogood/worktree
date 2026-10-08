@@ -32,15 +32,17 @@ type WorktreeProbe struct {
 
 // ProbeWorktrees gathers dirty state, last-commit date and ahead/behind vs
 // base for the given worktrees concurrently (bounded). Branch dates come
-// from a single batched lookup; detached worktrees fall back to a
-// per-worktree log. An empty base skips ahead/behind. Individual failures
-// are recorded on the probe and never abort the sweep.
-func (r *Repo) ProbeWorktrees(worktrees []Worktree, base string) []WorktreeProbe {
+// from a single batched lookup unless a precomputed map is passed;
+// detached worktrees fall back to a per-worktree log. An empty base skips
+// ahead/behind. Individual failures are recorded on the probe and never
+// abort the sweep.
+func (r *Repo) ProbeWorktrees(worktrees []Worktree, base string, dates map[string]time.Time) []WorktreeProbe {
 	probes := make([]WorktreeProbe, len(worktrees))
 
-	dates, err := r.BranchLastCommitMap()
-	if err != nil {
-		dates = nil
+	if dates == nil {
+		if batched, err := r.BranchLastCommitMap(); err == nil {
+			dates = batched
+		}
 	}
 
 	const maxParallel = 8

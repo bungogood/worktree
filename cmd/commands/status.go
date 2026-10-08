@@ -59,7 +59,7 @@ var statusCmd = &cobra.Command{
 			}
 			present = append(present, sorted[i])
 		}
-		probes := repo.ProbeWorktrees(present, base)
+		probes := repo.ProbeWorktrees(present, base, nil)
 		byPath := make(map[string]pkg.WorktreeProbe, len(probes))
 		for _, p := range probes {
 			byPath[p.Worktree.Path] = p

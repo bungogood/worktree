@@ -347,12 +347,61 @@ func (r *Repo) WorktreeLastActivity(wt *Worktree) (time.Time, error) {
 }
 
 // IsWorktreeDirty reports whether a worktree has uncommitted changes.
+// It answers from exit codes instead of full output: diff --quiet stops at
+// the first tracked change, and the untracked probe reads a single byte, so
+// dirty trees on huge repos return without enumerating everything.
 func (r *Repo) IsWorktreeDirty(wt *Worktree) (bool, error) {
+	if _, err := r.runGitRead(wt, "rev-parse", "--verify", "HEAD"); err != nil {
+		// No commits yet: fall back to full status (shows staged files).
+		return r.isWorktreeDirtyFull(wt)
+	}
+	if _, err := r.runGitRead(wt, "diff", "--quiet", "HEAD", "--"); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
+			return true, nil
+		}
+		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
+	}
+	untracked, err := r.hasUntrackedFiles(wt)
+	if err != nil {
+		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
+	}
+	return untracked, nil
+}
+
+// isWorktreeDirtyFull is the slow path: any porcelain output means dirty.
+func (r *Repo) isWorktreeDirtyFull(wt *Worktree) (bool, error) {
 	output, err := r.runGitRead(wt, "status", "--porcelain")
 	if err != nil {
 		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
 	}
 	return strings.TrimSpace(string(output)) != "", nil
+}
+
+// hasUntrackedFiles reports whether any untracked file exists, reading a
+// single output byte and killing the listing early.
+func (r *Repo) hasUntrackedFiles(wt *Worktree) (bool, error) {
+	args := []string{"ls-files", "--others", "--exclude-standard"}
+	if wt != nil {
+		args = append([]string{"-C", wt.Path}, args...)
+	}
+	if GlobalFlags.Verbose {
+		fmt.Fprintf(os.Stderr, "Running: git %s\n", strings.Join(args, " "))
+	}
+	cmd := exec.Command("git", args...)
+	cmd.Env = append(os.Environ(), readOnlyEnv...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return false, err
+	}
+	if err := cmd.Start(); err != nil {
+		return false, err
+	}
+	var one [1]byte
+	n, _ := stdout.Read(one[:])
+	_ = stdout.Close()
+	_ = cmd.Process.Kill()
+	_ = cmd.Wait()
+	return n > 0, nil
 }
 
 // readOnlyEnv marks git invocations that must never take locks or refresh

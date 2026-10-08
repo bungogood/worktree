@@ -8,6 +8,58 @@ import (
 	"testing"
 )
 
+func TestIsWorktreeDirty_States(t *testing.T) {
+	repoDir := t.TempDir()
+
+	runGit(t, repoDir, "init", "-b", "main")
+	runGit(t, repoDir, "config", "user.email", "tests@example.com")
+	runGit(t, repoDir, "config", "user.name", "Tests")
+
+	if err := os.WriteFile(filepath.Join(repoDir, "file.txt"), []byte("test\n"), 0644); err != nil {
+		t.Fatalf("failed to write seed file: %v", err)
+	}
+	runGit(t, repoDir, "add", "file.txt")
+	runGit(t, repoDir, "commit", "-m", "init")
+
+	r := &Repo{}
+	wt := &Worktree{Path: repoDir, Name: "repo", Branch: "main"}
+
+	check := func(want bool, what string) {
+		t.Helper()
+		got, err := r.IsWorktreeDirty(wt)
+		if err != nil {
+			t.Fatalf("IsWorktreeDirty (%s) failed: %v", what, err)
+		}
+		if got != want {
+			t.Fatalf("IsWorktreeDirty (%s) = %v, want %v", what, got, want)
+		}
+	}
+
+	check(false, "clean")
+	runGit(t, repoDir, "checkout", "-q", "-b", "scratch")
+
+	if err := os.WriteFile(filepath.Join(repoDir, "file.txt"), []byte("changed\n"), 0644); err != nil {
+		t.Fatalf("failed to modify file: %v", err)
+	}
+	check(true, "modified tracked file")
+
+	runGit(t, repoDir, "checkout", "-q", "--", "file.txt")
+	if err := os.WriteFile(filepath.Join(repoDir, "staged.txt"), []byte("staged\n"), 0644); err != nil {
+		t.Fatalf("failed to write staged file: %v", err)
+	}
+	runGit(t, repoDir, "add", "staged.txt")
+	check(true, "staged-only change")
+
+	runGit(t, repoDir, "reset", "-q", "HEAD", "staged.txt")
+	if err := os.Remove(filepath.Join(repoDir, "staged.txt")); err != nil {
+		t.Fatalf("failed to remove staged file: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(repoDir, "untracked.txt"), []byte("new\n"), 0644); err != nil {
+		t.Fatalf("failed to write untracked file: %v", err)
+	}
+	check(true, "untracked-only change")
+}
+
 func TestAheadBehind_CountsAgainstBase(t *testing.T) {
 	repoDir := t.TempDir()
 

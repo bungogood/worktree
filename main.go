@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/bungogood/worktree/cmd"
+	"github.com/bungogood/wrk/cmd"
 )
 
 func main() {

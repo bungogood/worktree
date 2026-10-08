@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/bungogood/worktree/cmd/commands"
-	"github.com/bungogood/worktree/pkg"
+	"github.com/bungogood/wrk/cmd/commands"
+	"github.com/bungogood/wrk/pkg"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -13,7 +13,7 @@ var RootCmd = &cobra.Command{
 	Long:  `A CLI tool for managing git worktrees with automatic organisation and navigation.`,
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
-		HiddenDefaultCmd: true,
+		HiddenDefaultCmd:  true,
 	},
 	SilenceUsage: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {

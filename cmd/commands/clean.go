@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bungogood/worktree/pkg"
+	"github.com/bungogood/wrk/pkg"
 	"github.com/spf13/cobra"
 )
 

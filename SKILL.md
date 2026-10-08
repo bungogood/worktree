@@ -16,7 +16,7 @@ metadata:
 ## The `wrk` rule
 
 The human says `wrk`, you run `wrk` — it is the binary, installed by
-`go install github.com/bungogood/worktree/cmd/wrk@latest`. In interactive
+`go install github.com/bungogood/wrk@latest`. In interactive
 shells a `wrk` function wraps it to change directories; you don't need that:
 parse the `wrk:cd:<path>` line from the output and `cd` yourself.
 

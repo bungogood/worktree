@@ -21,7 +21,7 @@ Work on multiple features in separate directories and switch between them instan
 ## Installation
 
 ```bash
-go install github.com/bungogood/worktree/cmd/wrk@latest
+go install github.com/bungogood/wrk@latest
 eval "$(wrk hook bash)"
 eval "$(wrk completion bash)"
 ```

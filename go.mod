@@ -1,4 +1,4 @@
-module github.com/bungogood/worktree
+module github.com/bungogood/wrk
 
 go 1.25
 

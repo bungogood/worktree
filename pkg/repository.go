@@ -347,40 +347,12 @@ func (r *Repo) WorktreeLastActivity(wt *Worktree) (time.Time, error) {
 }
 
 // IsWorktreeDirty reports whether a worktree has uncommitted changes.
-// It answers from exit codes instead of full output: diff --quiet stops at
-// the first tracked change, and the untracked probe reads a single byte, so
-// dirty trees on huge repos return without enumerating everything.
+// Exactly one git invocation: the first porcelain byte means dirty, so dirty
+// trees return without enumerating everything, while clean trees cost a
+// single scan. A process that dies on its own with no output and a failure
+// status is reported as an error, never as clean.
 func (r *Repo) IsWorktreeDirty(wt *Worktree) (bool, error) {
-	if _, err := r.runGitRead(wt, "rev-parse", "--verify", "HEAD"); err != nil {
-		// No commits yet: fall back to full status (shows staged files).
-		return r.isWorktreeDirtyFull(wt)
-	}
-	if _, err := r.runGitRead(wt, "diff", "--quiet", "HEAD", "--"); err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
-			return true, nil
-		}
-		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
-	}
-	untracked, err := r.hasUntrackedFiles(wt)
-	if err != nil {
-		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
-	}
-	return untracked, nil
-}
-
-// isWorktreeDirtyFull is the slow path: any porcelain output means dirty.
-func (r *Repo) isWorktreeDirtyFull(wt *Worktree) (bool, error) {
-	output, err := r.runGitRead(wt, "status", "--porcelain")
-	if err != nil {
-		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
-	}
-	return strings.TrimSpace(string(output)) != "", nil
-}
-
-// hasUntrackedFiles reports whether any untracked file exists, reading a
-// single output byte and killing the listing early.
-func (r *Repo) hasUntrackedFiles(wt *Worktree) (bool, error) {
-	args := []string{"ls-files", "--others", "--exclude-standard"}
+	args := []string{"status", "--porcelain"}
 	if wt != nil {
 		args = append([]string{"-C", wt.Path}, args...)
 	}
@@ -391,17 +363,23 @@ func (r *Repo) hasUntrackedFiles(wt *Worktree) (bool, error) {
 	cmd.Env = append(os.Environ(), readOnlyEnv...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
 	}
 	if err := cmd.Start(); err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
 	}
 	var one [1]byte
 	n, _ := stdout.Read(one[:])
 	_ = stdout.Close()
-	_ = cmd.Process.Kill()
-	_ = cmd.Wait()
-	return n > 0, nil
+	if n > 0 {
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+		return true, nil
+	}
+	if err := cmd.Wait(); err != nil {
+		return false, fmt.Errorf("failed to check status for worktree '%s': %w", wt.Name, err)
+	}
+	return false, nil
 }
 
 // parseGitVersion extracts major/minor from "git version 2.55.0" style output.
